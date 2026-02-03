@@ -1,7 +1,8 @@
 import types
-import pytest
 from unittest.mock import patch
-from werkzeug.exceptions import Forbidden, NotFound
+
+import pytest
+from werkzeug.exceptions import Forbidden
 
 import controllers.files.tool_files as module
 
@@ -13,11 +14,7 @@ def unwrap(func):
 
 
 def fake_request(args: dict):
-    return types.SimpleNamespace(
-        args=types.SimpleNamespace(
-            to_dict=lambda flat=True: args
-        )
-    )
+    return types.SimpleNamespace(args=types.SimpleNamespace(to_dict=lambda flat=True: args))
 
 
 class DummyToolFile:
@@ -31,11 +28,9 @@ class DummyToolFile:
 def mock_global_db():
     fake_db = types.SimpleNamespace(engine=object())
     module.global_db = fake_db
-    yield
 
 
 class TestToolFileApi:
-
     @patch.object(module, "verify_tool_file_signature", return_value=True)
     @patch.object(module, "ToolFileManager")
     def test_success_stream(
@@ -43,12 +38,14 @@ class TestToolFileApi:
         mock_tool_file_manager,
         mock_verify,
     ):
-        module.request = fake_request({
-            "timestamp": "123",
-            "nonce": "abc",
-            "sign": "sig",
-            "as_attachment": False,
-        })
+        module.request = fake_request(
+            {
+                "timestamp": "123",
+                "nonce": "abc",
+                "sign": "sig",
+                "as_attachment": False,
+            }
+        )
 
         stream = iter([b"data"])
         tool_file = DummyToolFile(size=100)
@@ -79,12 +76,14 @@ class TestToolFileApi:
         mock_tool_file_manager,
         mock_verify,
     ):
-        module.request = fake_request({
-            "timestamp": "123",
-            "nonce": "abc",
-            "sign": "sig",
-            "as_attachment": True,
-        })
+        module.request = fake_request(
+            {
+                "timestamp": "123",
+                "nonce": "abc",
+                "sign": "sig",
+                "as_attachment": True,
+            }
+        )
 
         stream = iter([b"data"])
         tool_file = DummyToolFile(
@@ -107,12 +106,14 @@ class TestToolFileApi:
 
     @patch.object(module, "verify_tool_file_signature", return_value=False)
     def test_invalid_signature(self, mock_verify):
-        module.request = fake_request({
-            "timestamp": "123",
-            "nonce": "abc",
-            "sign": "bad-sig",
-            "as_attachment": False,
-        })
+        module.request = fake_request(
+            {
+                "timestamp": "123",
+                "nonce": "abc",
+                "sign": "bad-sig",
+                "as_attachment": False,
+            }
+        )
 
         api = module.ToolFileApi()
         get_fn = unwrap(api.get)
@@ -127,12 +128,14 @@ class TestToolFileApi:
         mock_tool_file_manager,
         mock_verify,
     ):
-        module.request = fake_request({
-            "timestamp": "123",
-            "nonce": "abc",
-            "sign": "sig",
-            "as_attachment": False,
-        })
+        module.request = fake_request(
+            {
+                "timestamp": "123",
+                "nonce": "abc",
+                "sign": "sig",
+                "as_attachment": False,
+            }
+        )
 
         mock_tool_file_manager.return_value.get_file_generator_by_tool_file_id.return_value = (
             None,
@@ -152,16 +155,16 @@ class TestToolFileApi:
         mock_tool_file_manager,
         mock_verify,
     ):
-        module.request = fake_request({
-            "timestamp": "123",
-            "nonce": "abc",
-            "sign": "sig",
-            "as_attachment": False,
-        })
-
-        mock_tool_file_manager.return_value.get_file_generator_by_tool_file_id.side_effect = Exception(
-            "boom"
+        module.request = fake_request(
+            {
+                "timestamp": "123",
+                "nonce": "abc",
+                "sign": "sig",
+                "as_attachment": False,
+            }
         )
+
+        mock_tool_file_manager.return_value.get_file_generator_by_tool_file_id.side_effect = Exception("boom")
 
         api = module.ToolFileApi()
         get_fn = unwrap(api.get)

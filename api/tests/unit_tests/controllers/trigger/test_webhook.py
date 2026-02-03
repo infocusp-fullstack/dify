@@ -1,6 +1,7 @@
 import types
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import MagicMock, patch
 from werkzeug.exceptions import NotFound, RequestEntityTooLarge
 
 import controllers.trigger.webhook as module
@@ -13,13 +14,11 @@ def mock_request():
         headers={"x-test": "1"},
         args={"a": "b"},
     )
-    yield
 
 
 @pytest.fixture(autouse=True)
 def mock_jsonify():
     module.jsonify = lambda payload: payload
-    yield
 
 
 class DummyWebhookTrigger:
@@ -30,7 +29,6 @@ class DummyWebhookTrigger:
 
 
 class TestPrepareWebhookExecution:
-
     @patch.object(module.WebhookService, "get_webhook_trigger_and_workflow")
     @patch.object(module.WebhookService, "extract_and_validate_webhook_data")
     def test_prepare_success(self, mock_extract, mock_get):
@@ -53,7 +51,6 @@ class TestPrepareWebhookExecution:
 
 
 class TestHandleWebhook:
-
     @patch.object(module.WebhookService, "get_webhook_trigger_and_workflow")
     @patch.object(module.WebhookService, "extract_and_validate_webhook_data")
     @patch.object(module.WebhookService, "trigger_workflow_execution")
@@ -104,7 +101,6 @@ class TestHandleWebhook:
 
 
 class TestHandleWebhookDebug:
-
     @patch.object(module.WebhookService, "get_webhook_trigger_and_workflow")
     @patch.object(module.WebhookService, "extract_and_validate_webhook_data")
     @patch.object(module.WebhookService, "build_workflow_inputs", return_value={"x": 1})

@@ -1,6 +1,6 @@
-import types
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import MagicMock, patch
 from werkzeug.exceptions import NotFound
 
 import controllers.trigger.trigger as module
@@ -9,13 +9,11 @@ import controllers.trigger.trigger as module
 @pytest.fixture(autouse=True)
 def mock_request():
     module.request = object()
-    yield
 
 
 @pytest.fixture(autouse=True)
 def mock_jsonify():
     module.jsonify = lambda payload: payload
-    yield
 
 
 VALID_UUID = "123e4567-e89b-42d3-a456-426614174000"
@@ -23,7 +21,6 @@ INVALID_UUID = "not-a-uuid"
 
 
 class TestTriggerEndpoint:
-
     def test_invalid_uuid(self):
         with pytest.raises(NotFound):
             module.trigger_endpoint(INVALID_UUID)

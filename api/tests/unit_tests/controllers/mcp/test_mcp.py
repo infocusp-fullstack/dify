@@ -1,8 +1,9 @@
 import types
-import pytest
 from unittest.mock import MagicMock, patch
-from pydantic import ValidationError
+
+import pytest
 from flask import Response
+from pydantic import ValidationError
 
 import controllers.mcp.mcp as module
 
@@ -16,7 +17,6 @@ def unwrap(func):
 @pytest.fixture(autouse=True)
 def mock_db():
     module.db = types.SimpleNamespace(engine=object())
-    yield
 
 
 @pytest.fixture
@@ -30,7 +30,6 @@ def fake_session():
 @pytest.fixture(autouse=True)
 def mock_session(fake_session):
     module.Session = MagicMock(return_value=fake_session)
-    yield
 
 
 @pytest.fixture(autouse=True)
@@ -39,7 +38,6 @@ def mock_mcp_ns():
     fake_ns.payload = None
     fake_ns.models = {}
     module.mcp_ns = fake_ns
-    yield
 
 
 def fake_payload(data):
@@ -79,23 +77,20 @@ class DummyResult:
 
 
 class TestMCPAppApi:
-
     @patch.object(module, "handle_mcp_request", return_value=DummyResult())
     def test_success_request(self, mock_handle):
-        fake_payload({
-            "jsonrpc": "2.0",
-            "method": "initialize",
-            "id": 1,
-            "params": {
-                "protocolVersion": "2024-11-05",
-                "capabilities": {},
-                "clientInfo": {
-                    "name": "test-client",
-                    "version": "1.0"
-                }
-            },
-        })
-
+        fake_payload(
+            {
+                "jsonrpc": "2.0",
+                "method": "initialize",
+                "id": 1,
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {"name": "test-client", "version": "1.0"},
+                },
+            }
+        )
 
         server = DummyServer(status=module.AppMCPServerStatus.ACTIVE)
         app = DummyApp(
@@ -113,11 +108,13 @@ class TestMCPAppApi:
         mock_handle.assert_called_once()
 
     def test_notification_initialized(self):
-        fake_payload({
-            "jsonrpc": "2.0",
-            "method": "notifications/initialized",
-            "params": {},
-        })
+        fake_payload(
+            {
+                "jsonrpc": "2.0",
+                "method": "notifications/initialized",
+                "params": {},
+            }
+        )
 
         server = DummyServer(status=module.AppMCPServerStatus.ACTIVE)
         app = DummyApp(
@@ -134,11 +131,13 @@ class TestMCPAppApi:
         assert response.status_code == 202
 
     def test_invalid_notification_method(self):
-        fake_payload({
-            "jsonrpc": "2.0",
-            "method": "notifications/invalid",
-            "params": {},
-        })
+        fake_payload(
+            {
+                "jsonrpc": "2.0",
+                "method": "notifications/invalid",
+                "params": {},
+            }
+        )
 
         server = DummyServer(status=module.AppMCPServerStatus.ACTIVE)
         app = DummyApp(
@@ -155,12 +154,14 @@ class TestMCPAppApi:
             post_fn("server-1")
 
     def test_inactive_server(self):
-        fake_payload({
-            "jsonrpc": "2.0",
-            "method": "test",
-            "id": 1,
-            "params": {},
-        })
+        fake_payload(
+            {
+                "jsonrpc": "2.0",
+                "method": "test",
+                "id": 1,
+                "params": {},
+            }
+        )
 
         server = DummyServer(status="inactive")
         app = DummyApp(
@@ -177,9 +178,7 @@ class TestMCPAppApi:
             post_fn("server-1")
 
     def test_invalid_payload(self):
-        fake_payload({
-            "invalid": "data"
-        })
+        fake_payload({"invalid": "data"})
 
         api = module.MCPAppApi()
         post_fn = unwrap(api.post)
@@ -188,11 +187,13 @@ class TestMCPAppApi:
             post_fn("server-1")
 
     def test_missing_request_id(self):
-        fake_payload({
-            "jsonrpc": "2.0",
-            "method": "test",
-            "params": {},
-        })
+        fake_payload(
+            {
+                "jsonrpc": "2.0",
+                "method": "test",
+                "params": {},
+            }
+        )
 
         server = DummyServer(status=module.AppMCPServerStatus.ACTIVE)
         app = DummyApp(
@@ -210,19 +211,18 @@ class TestMCPAppApi:
 
     def test_server_not_found(self):
         """Test when MCP server doesn't exist"""
-        fake_payload({
-            "jsonrpc": "2.0",
-            "method": "initialize",
-            "id": 1,
-            "params": {
-                "protocolVersion": "2024-11-05",
-                "capabilities": {},
-                "clientInfo": {
-                    "name": "test-client",
-                    "version": "1.0"
-                }
-            },
-        })
+        fake_payload(
+            {
+                "jsonrpc": "2.0",
+                "method": "initialize",
+                "id": 1,
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {"name": "test-client", "version": "1.0"},
+                },
+            }
+        )
 
         api = module.MCPAppApi()
         api._get_mcp_server_and_app = MagicMock(
@@ -237,19 +237,18 @@ class TestMCPAppApi:
 
     def test_app_not_found(self):
         """Test when app associated with server doesn't exist"""
-        fake_payload({
-            "jsonrpc": "2.0",
-            "method": "initialize",
-            "id": 1,
-            "params": {
-                "protocolVersion": "2024-11-05",
-                "capabilities": {},
-                "clientInfo": {
-                    "name": "test-client",
-                    "version": "1.0"
-                }
-            },
-        })
+        fake_payload(
+            {
+                "jsonrpc": "2.0",
+                "method": "initialize",
+                "id": 1,
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {"name": "test-client", "version": "1.0"},
+                },
+            }
+        )
 
         api = module.MCPAppApi()
         api._get_mcp_server_and_app = MagicMock(
@@ -264,19 +263,18 @@ class TestMCPAppApi:
 
     def test_app_unavailable_no_workflow(self):
         """Test when app has no workflow (ADVANCED_CHAT mode)"""
-        fake_payload({
-            "jsonrpc": "2.0",
-            "method": "initialize",
-            "id": 1,
-            "params": {
-                "protocolVersion": "2024-11-05",
-                "capabilities": {},
-                "clientInfo": {
-                    "name": "test-client",
-                    "version": "1.0"
-                }
-            },
-        })
+        fake_payload(
+            {
+                "jsonrpc": "2.0",
+                "method": "initialize",
+                "id": 1,
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {"name": "test-client", "version": "1.0"},
+                },
+            }
+        )
 
         server = DummyServer(status=module.AppMCPServerStatus.ACTIVE)
         app = DummyApp(
@@ -295,19 +293,18 @@ class TestMCPAppApi:
 
     def test_app_unavailable_no_model_config(self):
         """Test when app has no model config (chat mode)"""
-        fake_payload({
-            "jsonrpc": "2.0",
-            "method": "initialize",
-            "id": 1,
-            "params": {
-                "protocolVersion": "2024-11-05",
-                "capabilities": {},
-                "clientInfo": {
-                    "name": "test-client",
-                    "version": "1.0"
-                }
-            },
-        })
+        fake_payload(
+            {
+                "jsonrpc": "2.0",
+                "method": "initialize",
+                "id": 1,
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {"name": "test-client", "version": "1.0"},
+                },
+            }
+        )
 
         server = DummyServer(status=module.AppMCPServerStatus.ACTIVE)
         app = DummyApp(
@@ -327,19 +324,18 @@ class TestMCPAppApi:
     @patch.object(module, "handle_mcp_request", return_value=None)
     def test_mcp_request_no_response(self, mock_handle):
         """Test when handle_mcp_request returns None"""
-        fake_payload({
-            "jsonrpc": "2.0",
-            "method": "initialize",
-            "id": 1,
-            "params": {
-                "protocolVersion": "2024-11-05",
-                "capabilities": {},
-                "clientInfo": {
-                    "name": "test-client",
-                    "version": "1.0"
-                }
-            },
-        })
+        fake_payload(
+            {
+                "jsonrpc": "2.0",
+                "method": "initialize",
+                "id": 1,
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {"name": "test-client", "version": "1.0"},
+                },
+            }
+        )
 
         server = DummyServer(status=module.AppMCPServerStatus.ACTIVE)
         app = DummyApp(
@@ -358,19 +354,18 @@ class TestMCPAppApi:
 
     def test_workflow_mode_with_user_input_form(self):
         """Test WORKFLOW mode app with user input form"""
-        fake_payload({
-            "jsonrpc": "2.0",
-            "method": "initialize",
-            "id": 1,
-            "params": {
-                "protocolVersion": "2024-11-05",
-                "capabilities": {},
-                "clientInfo": {
-                    "name": "test-client",
-                    "version": "1.0"
-                }
-            },
-        })
+        fake_payload(
+            {
+                "jsonrpc": "2.0",
+                "method": "initialize",
+                "id": 1,
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {"name": "test-client", "version": "1.0"},
+                },
+            }
+        )
 
         class WorkflowWithForm:
             def user_input_form(self, to_old_structure=False):
@@ -384,7 +379,7 @@ class TestMCPAppApi:
 
         api = module.MCPAppApi()
         api._get_mcp_server_and_app = MagicMock(return_value=(server, app))
-        
+
         with patch.object(module, "handle_mcp_request", return_value=DummyResult()):
             post_fn = unwrap(api.post)
             response = post_fn("server-1")
@@ -392,19 +387,18 @@ class TestMCPAppApi:
 
     def test_chat_mode_with_model_config(self):
         """Test CHAT mode app with model config"""
-        fake_payload({
-            "jsonrpc": "2.0",
-            "method": "initialize",
-            "id": 1,
-            "params": {
-                "protocolVersion": "2024-11-05",
-                "capabilities": {},
-                "clientInfo": {
-                    "name": "test-client",
-                    "version": "1.0"
-                }
-            },
-        })
+        fake_payload(
+            {
+                "jsonrpc": "2.0",
+                "method": "initialize",
+                "id": 1,
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {"name": "test-client", "version": "1.0"},
+                },
+            }
+        )
 
         server = DummyServer(status=module.AppMCPServerStatus.ACTIVE)
         app = DummyApp(
@@ -422,12 +416,14 @@ class TestMCPAppApi:
 
     def test_invalid_mcp_request_format(self):
         """Test invalid MCP request that doesn't match any type"""
-        fake_payload({
-            "jsonrpc": "2.0",
-            "method": "invalid_method_xyz",
-            "id": 1,
-            "params": {},
-        })
+        fake_payload(
+            {
+                "jsonrpc": "2.0",
+                "method": "invalid_method_xyz",
+                "id": 1,
+                "params": {},
+            }
+        )
 
         server = DummyServer(status=module.AppMCPServerStatus.ACTIVE)
         app = DummyApp(
@@ -447,18 +443,18 @@ class TestMCPAppApi:
     def test_server_found_successfully(self):
         """Test successful server and app retrieval"""
         api = module.MCPAppApi()
-        
+
         server = DummyServer(status=module.AppMCPServerStatus.ACTIVE)
         app = DummyApp(
             mode=module.AppMode.ADVANCED_CHAT,
             workflow=DummyWorkflow(),
         )
-        
+
         session = MagicMock()
         session.query().where().first.side_effect = [server, app]
-        
+
         result_server, result_app = api._get_mcp_server_and_app("server-1", session)
-        
+
         assert result_server == server
         assert result_app == app
 
@@ -466,7 +462,7 @@ class TestMCPAppApi:
         """Test successful server status validation"""
         api = module.MCPAppApi()
         server = DummyServer(status=module.AppMCPServerStatus.ACTIVE)
-        
+
         # Should not raise an exception
         api._validate_server_status(server)
 
@@ -478,19 +474,18 @@ class TestMCPAppApi:
 
     def test_invalid_user_input_form_validation(self):
         """Test invalid user input form that fails validation"""
-        fake_payload({
-            "jsonrpc": "2.0",
-            "method": "initialize",
-            "id": 1,
-            "params": {
-                "protocolVersion": "2024-11-05",
-                "capabilities": {},
-                "clientInfo": {
-                    "name": "test-client",
-                    "version": "1.0"
-                }
-            },
-        })
+        fake_payload(
+            {
+                "jsonrpc": "2.0",
+                "method": "initialize",
+                "id": 1,
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {"name": "test-client", "version": "1.0"},
+                },
+            }
+        )
 
         class WorkflowWithBadForm:
             def user_input_form(self, to_old_structure=False):

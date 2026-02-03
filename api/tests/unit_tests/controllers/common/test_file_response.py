@@ -1,10 +1,9 @@
 from flask import Response
-import pytest
 
 from controllers.common.file_response import (
+    _normalize_mime_type,
     enforce_download_for_html,
     is_html_content,
-    _normalize_mime_type,
 )
 
 

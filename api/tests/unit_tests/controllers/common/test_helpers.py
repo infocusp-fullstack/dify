@@ -37,7 +37,7 @@ class TestGuessFileInfoFromResponse:
 
     def test_filename_from_content_disposition(self):
         headers = {
-            "Content-Disposition": 'attachment; filename=myfile.csv',
+            "Content-Disposition": "attachment; filename=myfile.csv",
             "Content-Type": "text/csv",
         }
         response = make_response(

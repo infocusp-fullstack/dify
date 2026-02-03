@@ -1,6 +1,7 @@
 import types
-import pytest
 from unittest.mock import patch
+
+import pytest
 from werkzeug.exceptions import NotFound
 
 import controllers.files.image_preview as module
@@ -20,7 +21,6 @@ def mock_db():
     """
     fake_db = types.SimpleNamespace(engine=object())
     module.db = fake_db
-    yield
 
 
 class DummyUploadFile:
@@ -33,22 +33,19 @@ class DummyUploadFile:
 
 def fake_request(args: dict):
     """Return a fake request object (NOT a Flask LocalProxy)."""
-    return types.SimpleNamespace(
-        args=types.SimpleNamespace(
-            to_dict=lambda flat=True: args
-        )
-    )
+    return types.SimpleNamespace(args=types.SimpleNamespace(to_dict=lambda flat=True: args))
 
 
 class TestImagePreviewApi:
-
     @patch.object(module, "FileService")
     def test_success(self, mock_file_service):
-        module.request = fake_request({
-            "timestamp": "123",
-            "nonce": "abc",
-            "sign": "sig",
-        })
+        module.request = fake_request(
+            {
+                "timestamp": "123",
+                "nonce": "abc",
+                "sign": "sig",
+            }
+        )
 
         generator = iter([b"img"])
         mock_file_service.return_value.get_image_preview.return_value = (
@@ -65,11 +62,13 @@ class TestImagePreviewApi:
 
     @patch.object(module, "FileService")
     def test_unsupported_file_type(self, mock_file_service):
-        module.request = fake_request({
-            "timestamp": "123",
-            "nonce": "abc",
-            "sign": "sig",
-        })
+        module.request = fake_request(
+            {
+                "timestamp": "123",
+                "nonce": "abc",
+                "sign": "sig",
+            }
+        )
 
         mock_file_service.return_value.get_image_preview.side_effect = (
             module.services.errors.file.UnsupportedFileTypeError()
@@ -83,16 +82,17 @@ class TestImagePreviewApi:
 
 
 class TestFilePreviewApi:
-
     @patch.object(module, "enforce_download_for_html")
     @patch.object(module, "FileService")
     def test_basic_stream(self, mock_file_service, mock_enforce):
-        module.request = fake_request({
-            "timestamp": "123",
-            "nonce": "abc",
-            "sign": "sig",
-            "as_attachment": False,
-        })
+        module.request = fake_request(
+            {
+                "timestamp": "123",
+                "nonce": "abc",
+                "sign": "sig",
+                "as_attachment": False,
+            }
+        )
 
         generator = iter([b"data"])
         upload_file = DummyUploadFile(size=100)
@@ -115,12 +115,14 @@ class TestFilePreviewApi:
     @patch.object(module, "enforce_download_for_html")
     @patch.object(module, "FileService")
     def test_as_attachment(self, mock_file_service, mock_enforce):
-        module.request = fake_request({
-            "timestamp": "123",
-            "nonce": "abc",
-            "sign": "sig",
-            "as_attachment": True,
-        })
+        module.request = fake_request(
+            {
+                "timestamp": "123",
+                "nonce": "abc",
+                "sign": "sig",
+                "as_attachment": True,
+            }
+        )
 
         generator = iter([b"data"])
         upload_file = DummyUploadFile(
@@ -145,12 +147,14 @@ class TestFilePreviewApi:
 
     @patch.object(module, "FileService")
     def test_unsupported_file_type(self, mock_file_service):
-        module.request = fake_request({
-            "timestamp": "123",
-            "nonce": "abc",
-            "sign": "sig",
-            "as_attachment": False,
-        })
+        module.request = fake_request(
+            {
+                "timestamp": "123",
+                "nonce": "abc",
+                "sign": "sig",
+                "as_attachment": False,
+            }
+        )
 
         mock_file_service.return_value.get_file_generator_by_file_id.side_effect = (
             module.services.errors.file.UnsupportedFileTypeError()
@@ -164,7 +168,6 @@ class TestFilePreviewApi:
 
 
 class TestWorkspaceWebappLogoApi:
-
     @patch.object(module, "FileService")
     @patch.object(module.TenantService, "get_custom_config")
     def test_success(self, mock_config, mock_file_service):

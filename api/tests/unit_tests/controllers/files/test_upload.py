@@ -1,9 +1,11 @@
 import types
-import pytest
 from unittest.mock import patch
+
+import pytest
 from werkzeug.exceptions import Forbidden
 
 import controllers.files.upload as module
+
 
 def unwrap(func):
     while hasattr(func, "__wrapped__"):
@@ -13,9 +15,7 @@ def unwrap(func):
 
 def fake_request(args: dict, file=None):
     return types.SimpleNamespace(
-        args=types.SimpleNamespace(
-            to_dict=lambda flat=True: args
-        ),
+        args=types.SimpleNamespace(to_dict=lambda flat=True: args),
         files={"file": file} if file else {},
     )
 
@@ -49,7 +49,6 @@ class DummyToolFile:
 
 
 class TestPluginUploadFileApi:
-
     @patch.object(module, "verify_plugin_file_signature", return_value=True)
     @patch.object(module, "get_user", return_value=DummyUser())
     @patch.object(module, "ToolFileManager")
@@ -85,8 +84,6 @@ class TestPluginUploadFileApi:
         assert status_code == 201
         assert result["id"] == "file-id"
         assert result["preview_url"] == "signed-url"
-
-
 
     def test_missing_file(self):
         module.request = fake_request(
