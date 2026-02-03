@@ -22,16 +22,18 @@ describe('FullScreenModal Component', () => {
     expect(await screen.findByTestId('modal-content')).toBeInTheDocument()
   })
 
-  it('should not crash when provided with title and description props', () => {
-    render(
-      <FullScreenModal
-        open={true}
-        title="My Title"
-        description="My Description"
-      >
-        Content
-      </FullScreenModal>,
-    )
+  it('should not crash when provided with title and description props', async () => {
+    await act(async () => {
+      render(
+        <FullScreenModal
+          open={true}
+          title="My Title"
+          description="My Description"
+        >
+          Content
+        </FullScreenModal>,
+      )
+    })
   })
 
   describe('Props Handling', () => {
@@ -52,63 +54,73 @@ describe('FullScreenModal Component', () => {
     })
 
     it('should apply className to the inner panel', async () => {
-      render(
-        <FullScreenModal
-          open={true}
-          className="custom-panel-class"
-        >
-          Content
-        </FullScreenModal>,
-      )
+      await act(async () => {
+        render(
+          <FullScreenModal
+            open={true}
+            className="custom-panel-class"
+          >
+            Content
+          </FullScreenModal>,
+        )
+      })
       const panel = document.querySelector('.custom-panel-class')
       expect(panel).toBeInTheDocument()
       expect(panel).toHaveClass('h-full')
     })
 
     it('should handle overflowVisible prop', async () => {
-      const { rerender } = render(
-        <FullScreenModal
-          open={true}
-          overflowVisible={true}
-          className="target-panel"
-        >
-          Content
-        </FullScreenModal>,
-      )
+      const { rerender } = await act(async () => {
+        return render(
+          <FullScreenModal
+            open={true}
+            overflowVisible={true}
+            className="target-panel"
+          >
+            Content
+          </FullScreenModal>,
+        )
+      })
       let panel = document.querySelector('.target-panel')
       expect(panel).toHaveClass('overflow-visible')
       expect(panel).not.toHaveClass('overflow-hidden')
 
-      rerender(
-        <FullScreenModal
-          open={true}
-          overflowVisible={false}
-          className="target-panel"
-        >
-          Content
-        </FullScreenModal>,
-      )
+      await act(async () => {
+        rerender(
+          <FullScreenModal
+            open={true}
+            overflowVisible={false}
+            className="target-panel"
+          >
+            Content
+          </FullScreenModal>,
+        )
+      })
       panel = document.querySelector('.target-panel')
       expect(panel).toHaveClass('overflow-hidden')
       expect(panel).not.toHaveClass('overflow-visible')
     })
 
     it('should render close button when closable is true', async () => {
-      render(
-        <FullScreenModal open={true} closable={true}>
-          Content
-        </FullScreenModal>,
-      )
+      await act(async () => {
+        render(
+          <FullScreenModal open={true} closable={true}>
+            Content
+          </FullScreenModal>,
+        )
+      })
       const closeButton = document.querySelector('.bg-components-button-tertiary-bg')
       expect(closeButton).toBeInTheDocument()
     })
 
     it('should not render close button when closable is false', async () => {
-      render(
-        <FullScreenModal open={true} closable={false}>
-          Content
-        </FullScreenModal>,
-      )
+      await act(async () => {
+        render(
+          <FullScreenModal open={true} closable={false}>
+            Content
+          </FullScreenModal>,
+        )
+      })
       const closeButton = document.querySelector('.bg-components-button-tertiary-bg')
       expect(closeButton).not.toBeInTheDocument()
     })
