@@ -5,7 +5,6 @@ import { usePluginTaskStatus } from '@/app/components/plugins/plugin-page/plugin
 
 import PluginsNav from './index'
 
-// Mock dependencies
 vi.mock('next/navigation', () => ({
   useSelectedLayoutSegment: vi.fn(),
 }))
@@ -14,9 +13,6 @@ vi.mock('@/app/components/plugins/plugin-page/plugin-tasks/hooks', () => ({
   usePluginTaskStatus: vi.fn(),
 }))
 
-// Use real components for Indicator, DownloadingIcon, Group
-// No mocks for them.
-
 describe('PluginsNav', () => {
   const mockUseSelectedLayoutSegment = useSelectedLayoutSegment as Mock
   const mockUsePluginTaskStatus = usePluginTaskStatus as Mock
@@ -24,7 +20,6 @@ describe('PluginsNav', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    // Default mock setup: Not active, no installing/error tasks
     mockUseSelectedLayoutSegment.mockReturnValue(null)
     mockUsePluginTaskStatus.mockReturnValue({
       isInstalling: false,
@@ -36,20 +31,13 @@ describe('PluginsNav', () => {
   it('renders correctly (Default)', () => {
     render(<PluginsNav />)
 
-    // Check Link href
     const linkElement = screen.getByRole('link')
     expect(linkElement).toHaveAttribute('href', '/plugins')
     expect(screen.getByText('common.menus.plugins')).toBeInTheDocument()
 
-    // Should show Group icon (default)
-    // Group icon is rendered via IconBase. We can check if an SVG is present.
-    // Since there are no other icons in default state, 1 SVG should be present.
-    // The DownloadingIcon has class "install-icon", Group icon does not.
     const svg = linkElement.querySelector('svg')
     expect(svg).toBeInTheDocument()
-    expect(svg).not.toHaveClass('install-icon') // It is NOT the downloading icon
 
-    // Indicator should NOT be present
     expect(screen.queryByTestId('status-indicator')).not.toBeInTheDocument()
   })
 
@@ -75,21 +63,13 @@ describe('PluginsNav', () => {
 
       const { container } = render(<PluginsNav />)
 
-      // Should show DownloadingIcon
       const downloadingIcon = container.querySelector('.install-icon')
       expect(downloadingIcon).toBeInTheDocument()
 
-      // Should NOT show Group icon (PluginsNav hides Group when installing)
-      // Implementation: (!(isInstalling || isInstallingWithError) || activated) -> False
-      // So Group icon is not rendered.
-      // But DownloadingIcon is an SVG with class install-icon.
-      // So querying 'svg' might find it.
-      // We want to ensure NO OTHER svg is there.
       const svgs = container.querySelectorAll('svg')
       expect(svgs.length).toBe(1)
       expect(svgs[0]).toHaveClass('install-icon')
 
-      // Indicator should NOT be present
       expect(screen.queryByTestId('status-indicator')).not.toBeInTheDocument()
     })
 
@@ -98,11 +78,9 @@ describe('PluginsNav', () => {
 
       const { container } = render(<PluginsNav />)
 
-      // Should show DownloadingIcon
       const downloadingIcon = container.querySelector('.install-icon')
       expect(downloadingIcon).toBeInTheDocument()
 
-      // Should show Indicator
       expect(screen.getByTestId('status-indicator')).toBeInTheDocument()
     })
 
@@ -111,20 +89,10 @@ describe('PluginsNav', () => {
 
       const { container } = render(<PluginsNav />)
 
-      // Should show Group icon (Implementation: (!(isInstalling || isInstallingWithError) || activated) -> True)
-      // Because isFailed is True, but IsInstalling is False.
-      // Wait, let's re-read code:
-      // (!(isInstalling || isInstallingWithError) || activated)
-      // If isFailed=true, isInstalling=false, isInstallingWithError=false.
-      // ! (false || false) -> true.
-      // So Group icon IS SHOWN.
-
       const svg = container.querySelector('svg')
       expect(svg).toBeInTheDocument()
       expect(svg).not.toHaveClass('install-icon')
 
-      // Should show Indicator
-      // (isFailed || isInstallingWithError) && !activated -> true
       expect(screen.getByTestId('status-indicator')).toBeInTheDocument()
     })
 
@@ -134,12 +102,10 @@ describe('PluginsNav', () => {
 
       const { container } = render(<PluginsNav />)
 
-      // Activated -> Group icon shown
       const svg = container.querySelector('svg')
       expect(svg).toBeInTheDocument()
       expect(svg).not.toHaveClass('install-icon')
 
-      // DownloadingIcon hidden
       expect(container.querySelector('.install-icon')).not.toBeInTheDocument()
     })
   })

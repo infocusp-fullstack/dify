@@ -60,7 +60,7 @@ describe('PlanBadge', () => {
       }),
     )
     const { container } = render(<PlanBadge plan={Plan.professional} />)
-    // The graduation icon RiGraduationCapFill is rendered
+
     expect(container.querySelector('svg')).toBeInTheDocument()
     expect(screen.getByText('pro')).toBeInTheDocument()
   })
@@ -98,9 +98,7 @@ describe('PlanBadge', () => {
     const { container } = render(
       <PlanBadge plan={Plan.team} allowHover={true} />,
     )
-    // We can't easily check for allowHover if it's just passed down to PremiumBadge
-    // unless PremiumBadge puts it in the DOM or we mock PremiumBadge (which we shouldn't).
-    // But we can at least ensure it renders.
+
     expect(container.firstChild).not.toBeNull()
   })
 })
