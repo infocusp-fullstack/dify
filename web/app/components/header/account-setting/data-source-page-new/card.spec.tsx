@@ -1,5 +1,5 @@
 import type { DataSourceAuth, DataSourceCredential } from './types'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { vi } from 'vitest'
 import { CredentialTypeEnum } from '@/app/components/plugins/plugin-auth/types'
 import Card from './card'
@@ -240,7 +240,7 @@ describe('Card Component', () => {
     expect(mockMutateAsync).toHaveBeenCalledWith('1')
     // Wait for the chain to complete if needed
     // Since handleOAuth is async, we need to wait
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(mockOpenOAuthPopup).toHaveBeenCalledWith(
         'http://auth-url.com',
         mockHandleAuthUpdate,
@@ -268,7 +268,7 @@ describe('Card Component', () => {
     expect(mockMutateAsync).toHaveBeenCalledWith('1')
 
     // Wait for promise resolution
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(mockOpenOAuthPopup).not.toHaveBeenCalled()
     })
   })

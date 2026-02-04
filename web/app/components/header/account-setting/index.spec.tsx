@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
 import { useAppContext } from '@/context/app-context'
 import { baseProviderContextValue, useProviderContext } from '@/context/provider-context'
-import useBreakpoints from '@/hooks/use-breakpoints'
+import useBreakpoints, { MediaType } from '@/hooks/use-breakpoints'
 import { ACCOUNT_SETTING_TAB } from './constants'
 import AccountSetting from './index'
 
@@ -22,12 +22,6 @@ vi.mock('@/context/app-context', async (importOriginal) => {
     useAppContext: vi.fn(),
   }
 })
-
-export enum MediaType {
-  mobile = 'mobile',
-  tablet = 'tablet',
-  pc = 'pc',
-}
 
 vi.mock('@/hooks/use-breakpoints', () => ({
   MediaType: {
