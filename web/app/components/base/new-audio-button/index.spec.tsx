@@ -50,7 +50,10 @@ vi.mock('@/app/components/base/action-button', () => ({
 describe('AudioBtn', () => {
   const getAudioCallback = () => {
     const lastCall = mockGetAudioPlayer.mock.calls[mockGetAudioPlayer.mock.calls.length - 1]
-    return lastCall?.find((arg: unknown) => typeof arg === 'function') as (event: string) => void
+    const callback = lastCall?.find((arg: unknown) => typeof arg === 'function') as ((event: string) => void) | undefined
+    if (!callback)
+      throw new Error('Audio callback not found - ensure mockGetAudioPlayer was called with a callback argument')
+    return callback
   }
 
   beforeEach(() => {
