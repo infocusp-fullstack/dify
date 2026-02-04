@@ -2,7 +2,7 @@ import types
 from unittest.mock import patch
 
 import pytest
-from werkzeug.exceptions import Forbidden, NotFound
+from werkzeug.exceptions import Forbidden
 
 import controllers.files.tool_files as module
 
