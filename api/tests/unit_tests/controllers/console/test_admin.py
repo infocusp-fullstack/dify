@@ -20,11 +20,11 @@ from models.model import App, InstalledApp, RecommendedApp
 @pytest.fixture(autouse=True)
 def bypass_only_edition_cloud(mocker):
     """
-    Disable only_edition_cloud behavior for unit tests.
+    Bypass only_edition_cloud decorator by setting EDITION to "CLOUD".
     """
     mocker.patch(
-        "controllers.console.wraps.abort",
-        return_value=None,
+        "controllers.console.wraps.dify_config.EDITION",
+        "CLOUD",
     )
 
 

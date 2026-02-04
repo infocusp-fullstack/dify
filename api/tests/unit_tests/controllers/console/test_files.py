@@ -42,16 +42,14 @@ def mock_decorators():
     """
     Make decorators no-ops so logic is directly testable
     """
-    decorators = [
-        "controllers.console.files.setup_required",
-        "controllers.console.files.login_required",
-        "controllers.console.files.account_initialization_required",
-        "controllers.console.files.cloud_edition_billing_resource_check",
-    ]
-
-    with patch.multiple(*decorators[:3], new=lambda f: f), patch(decorators[3], return_value=lambda f: f):
+    with (
+        patch("controllers.console.files.setup_required", new=lambda f: f),
+        patch("controllers.console.files.login_required", new=lambda f: f),
+        patch("controllers.console.files.account_initialization_required", new=lambda f: f),
+        patch("controllers.console.files.cloud_edition_billing_resource_check", return_value=lambda f: f),
+    ):
         yield
-
+    
 
 @pytest.fixture
 def mock_current_user():

@@ -62,9 +62,9 @@ class TestInstalledAppsListApi:
             patch.object(module.db, "session", session), \
             patch.object(module.TenantService, "get_user_role", return_value="owner"), \
             patch.object(
-                module.FeatureService.get_system_features().webapp_auth,
-                "enabled",
-                False,
+                module.FeatureService,
+                "get_system_features",
+                return_value=MagicMock(webapp_auth=MagicMock(enabled=False)),
             ):
             result = method(api)
 
@@ -84,9 +84,9 @@ class TestInstalledAppsListApi:
             patch.object(module.db, "session", session), \
             patch.object(module.TenantService, "get_user_role", return_value="member"), \
             patch.object(
-                module.FeatureService.get_system_features().webapp_auth,
-                "enabled",
-                False,
+                module.FeatureService,
+                "get_system_features",
+                return_value=MagicMock(webapp_auth=MagicMock(enabled=False)),
             ):
             result = method(api)
 
@@ -107,7 +107,11 @@ class TestInstalledAppsListApi:
             patch.object(module, "current_account_with_tenant", return_value=(current_user, tenant_id)), \
             patch.object(module.db, "session", session), \
             patch.object(module.TenantService, "get_user_role", return_value="owner"), \
-            patch.object(module.FeatureService.get_system_features().webapp_auth, "enabled", True), \
+            patch.object(
+                module.FeatureService,
+                "get_system_features",
+                return_value=MagicMock(webapp_auth=MagicMock(enabled=True)),
+            ), \
             patch.object(
                 module.EnterpriseService.WebAppAuth,
                 "batch_get_app_access_mode_by_id",
@@ -137,7 +141,11 @@ class TestInstalledAppsListApi:
             patch.object(module, "current_account_with_tenant", return_value=(current_user, tenant_id)), \
             patch.object(module.db, "session", session), \
             patch.object(module.TenantService, "get_user_role", return_value="member"), \
-            patch.object(module.FeatureService.get_system_features().webapp_auth, "enabled", True), \
+            patch.object(
+                module.FeatureService,
+                "get_system_features",
+                return_value=MagicMock(webapp_auth=MagicMock(enabled=True)),
+            ), \
             patch.object(
                 module.EnterpriseService.WebAppAuth,
                 "batch_get_app_access_mode_by_id",
@@ -194,9 +202,9 @@ class TestInstalledAppsListApi:
             patch.object(module.db, "session", session), \
             patch.object(module.TenantService, "get_user_role", return_value="owner"), \
             patch.object(
-                module.FeatureService.get_system_features().webapp_auth,
-                "enabled",
-                False,
+                module.FeatureService,
+                "get_system_features",
+                return_value=MagicMock(webapp_auth=MagicMock(enabled=False)),
             ):
             result = method(api)
 

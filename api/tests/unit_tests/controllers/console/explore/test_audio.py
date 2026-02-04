@@ -27,8 +27,11 @@ from services.errors.audio import (
 
 
 def unwrap(func):
+    bound_self = getattr(func, "__self__", None)
     while hasattr(func, "__wrapped__"):
         func = func.__wrapped__
+    if bound_self is not None:
+        return func.__get__(bound_self, bound_self.__class__)
     return func
 
 

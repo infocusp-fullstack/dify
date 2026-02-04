@@ -1,9 +1,10 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, PropertyMock
 
 import pytest
 from flask import Flask
 from werkzeug.exceptions import Forbidden
 
+from controllers.console import console_ns
 from controllers.console.tag.tags import (
     TagBindingCreateApi,
     TagBindingDeleteApi,
@@ -55,6 +56,18 @@ def tag():
     return tag
 
 
+@pytest.fixture
+def payload_patch():
+    def _patch(payload):
+        return patch.object(
+            type(console_ns),
+            "payload",
+            new_callable=PropertyMock,
+            return_value=payload,
+        )
+    return _patch
+
+
 class TestTagListApi:
     def test_get_success(self, app):
         api = TagListApi()
@@ -73,7 +86,7 @@ class TestTagListApi:
         assert status == 200
         assert isinstance(result, list)
 
-    def test_post_success(self, app, admin_user, tag):
+    def test_post_success(self, app, admin_user, tag, payload_patch):
         api = TagListApi()
         method = unwrap(api.post)
 
@@ -83,10 +96,7 @@ class TestTagListApi:
             with patch(
                 "controllers.console.tag.tags.current_account_with_tenant",
                 return_value=(admin_user, None),
-            ), patch(
-                "flask.request.get_json",
-                return_value=payload,
-            ), patch(
+            ), payload_patch(payload), patch(
                 "controllers.console.tag.tags.TagService.save_tags",
                 return_value=tag,
             ):
@@ -95,7 +105,7 @@ class TestTagListApi:
         assert status == 200
         assert result["name"] == "test-tag"
 
-    def test_post_forbidden(self, app, readonly_user):
+    def test_post_forbidden(self, app, readonly_user, payload_patch):
         api = TagListApi()
         method = unwrap(api.post)
 
@@ -105,16 +115,13 @@ class TestTagListApi:
             with patch(
                 "controllers.console.tag.tags.current_account_with_tenant",
                 return_value=(readonly_user, None),
-            ), patch(
-                "flask.request.get_json",
-                return_value=payload,
-            ):
+            ), payload_patch(payload):
                 with pytest.raises(Forbidden):
                     method(api)
 
 
 class TestTagUpdateDeleteApi:
-    def test_patch_success(self, app, admin_user, tag):
+    def test_patch_success(self, app, admin_user, tag, payload_patch):
         api = TagUpdateDeleteApi()
         method = unwrap(api.patch)
 
@@ -124,10 +131,7 @@ class TestTagUpdateDeleteApi:
             with patch(
                 "controllers.console.tag.tags.current_account_with_tenant",
                 return_value=(admin_user, None),
-            ), patch(
-                "flask.request.get_json",
-                return_value=payload,
-            ), patch(
+            ), payload_patch(payload), patch(
                 "controllers.console.tag.tags.TagService.update_tags",
                 return_value=tag,
             ), patch(
@@ -139,7 +143,7 @@ class TestTagUpdateDeleteApi:
         assert status == 200
         assert result["binding_count"] == 3
 
-    def test_patch_forbidden(self, app, readonly_user):
+    def test_patch_forbidden(self, app, readonly_user, payload_patch):
         api = TagUpdateDeleteApi()
         method = unwrap(api.patch)
 
@@ -149,10 +153,7 @@ class TestTagUpdateDeleteApi:
             with patch(
                 "controllers.console.tag.tags.current_account_with_tenant",
                 return_value=(readonly_user, None),
-            ), patch(
-                "flask.request.get_json",
-                return_value=payload,
-            ):
+            ), payload_patch(payload):
                 with pytest.raises(Forbidden):
                     method(api, "tag-1")
 
@@ -171,7 +172,7 @@ class TestTagUpdateDeleteApi:
 
 
 class TestTagBindingCreateApi:
-    def test_create_success(self, app, admin_user):
+    def test_create_success(self, app, admin_user, payload_patch):
         api = TagBindingCreateApi()
         method = unwrap(api.post)
 
@@ -185,10 +186,7 @@ class TestTagBindingCreateApi:
             with patch(
                 "controllers.console.tag.tags.current_account_with_tenant",
                 return_value=(admin_user, None),
-            ), patch(
-                "flask.request.get_json",
-                return_value=payload,
-            ), patch(
+            ), payload_patch(payload), patch(
                 "controllers.console.tag.tags.TagService.save_tag_binding"
             ) as save_mock:
                 result, status = method(api)
@@ -197,7 +195,7 @@ class TestTagBindingCreateApi:
         assert status == 200
         assert result["result"] == "success"
 
-    def test_create_forbidden(self, app, readonly_user):
+    def test_create_forbidden(self, app, readonly_user, payload_patch):
         api = TagBindingCreateApi()
         method = unwrap(api.post)
 
@@ -205,16 +203,13 @@ class TestTagBindingCreateApi:
             with patch(
                 "controllers.console.tag.tags.current_account_with_tenant",
                 return_value=(readonly_user, None),
-            ), patch(
-                "flask.request.get_json",
-                return_value={},
-            ):
+            ), payload_patch({}):
                 with pytest.raises(Forbidden):
                     method(api)
 
 
 class TestTagBindingDeleteApi:
-    def test_remove_success(self, app, admin_user):
+    def test_remove_success(self, app, admin_user, payload_patch):
         api = TagBindingDeleteApi()
         method = unwrap(api.post)
 
@@ -228,10 +223,7 @@ class TestTagBindingDeleteApi:
             with patch(
                 "controllers.console.tag.tags.current_account_with_tenant",
                 return_value=(admin_user, None),
-            ), patch(
-                "flask.request.get_json",
-                return_value=payload,
-            ), patch(
+            ), payload_patch(payload), patch(
                 "controllers.console.tag.tags.TagService.delete_tag_binding"
             ) as delete_mock:
                 result, status = method(api)
@@ -240,7 +232,7 @@ class TestTagBindingDeleteApi:
         assert status == 200
         assert result["result"] == "success"
 
-    def test_remove_forbidden(self, app, readonly_user):
+    def test_remove_forbidden(self, app, readonly_user, payload_patch):
         api = TagBindingDeleteApi()
         method = unwrap(api.post)
 
@@ -248,9 +240,6 @@ class TestTagBindingDeleteApi:
             with patch(
                 "controllers.console.tag.tags.current_account_with_tenant",
                 return_value=(readonly_user, None),
-            ), patch(
-                "flask.request.get_json",
-                return_value={},
-            ):
+            ), payload_patch({}):
                 with pytest.raises(Forbidden):
                     method(api)
