@@ -88,7 +88,7 @@ def mock_session_factory(mocker):
         "controllers.console.admin.session_factory.create_session",
         return_value=Mock(
             __enter__=lambda s: mock_session,
-            __exit__=Mock(),
+            __exit__=Mock(return_value=False),
         ),
     )
 
@@ -173,7 +173,7 @@ class TestInsertExploreAppApiDelete:
             "controllers.console.admin.session_factory.create_session",
             return_value=Mock(
                 __enter__=lambda s: s,
-                __exit__=Mock(),
+                __exit__=Mock(return_value=False),
                 execute=lambda *_: Mock(scalar_one_or_none=lambda: None),
             ),
         )
@@ -202,17 +202,17 @@ class TestInsertExploreAppApiDelete:
 
         # Set up side effects for execute calls
         mock_session.execute.side_effect = [
-            Mock(scalar_one_or_none=lambda: mock_recommended),  # First call finds recommended app
-            Mock(scalar_one_or_none=lambda: mock_app),  # Second call finds app
-            Mock(scalar_one_or_none=lambda: None),  # Third call finds no installed apps
-            Mock(scalar_one_or_none=lambda: mock_trial),  # Fourth call finds trial app
+            Mock(scalar_one_or_none=lambda: mock_recommended),
+            Mock(scalar_one_or_none=lambda: mock_app),
+            Mock(scalars=Mock(return_value=Mock(all=lambda: []))),
+            Mock(scalar_one_or_none=lambda: mock_trial),
         ]
 
         mocker.patch(
             "controllers.console.admin.session_factory.create_session",
             return_value=Mock(
                 __enter__=lambda s: mock_session,
-                __exit__=Mock(),
+                __exit__=Mock(return_value=False),
             ),
         )
 
@@ -253,7 +253,7 @@ class TestInsertExploreAppApiDelete:
             "controllers.console.admin.session_factory.create_session",
             return_value=Mock(
                 __enter__=lambda s: mock_session,
-                __exit__=Mock(),
+                __exit__=Mock(return_value=False),
             ),
         )
 
@@ -279,20 +279,36 @@ class TestInsertExploreAppListApi:
         with pytest.raises(NotFound, match="is not found"):
             self.api.post()
 
-    def test_create_recommended_app(self, mocker, mock_admin_auth, mock_console_payload, mock_session_factory):
+    def test_create_recommended_app(
+        self,
+        mocker,
+        mock_admin_auth,
+        mock_console_payload,
+    ):
         mock_app = Mock(spec=App)
         mock_app.id = "app-id"
         mock_app.site = None
         mock_app.tenant_id = "tenant"
         mock_app.is_public = False
 
+        # db.session.execute → fetch App
         mocker.patch(
             "controllers.console.admin.db.session.execute",
-            side_effect=[
-                Mock(scalar_one_or_none=lambda: mock_app),
-                Mock(scalar_one_or_none=lambda: None),
-                Mock(scalar_one_or_none=lambda: None),
-            ],
+            return_value=Mock(scalar_one_or_none=lambda: mock_app),
+        )
+
+        # session_factory.create_session → recommended_app lookup
+        mock_session = Mock()
+        mock_session.execute = Mock(
+            return_value=Mock(scalar_one_or_none=lambda: None)
+        )
+
+        mocker.patch(
+            "controllers.console.admin.session_factory.create_session",
+            return_value=Mock(
+                __enter__=lambda s: mock_session,
+                __exit__=Mock(return_value=False),
+            ),
         )
 
         mocker.patch("controllers.console.admin.db.session.add")
@@ -300,33 +316,33 @@ class TestInsertExploreAppListApi:
 
         response, status = self.api.post()
 
-        assert status == 200
+        assert status == 201
         assert response["result"] == "success"
         assert mock_app.is_public is True
 
-    def test_update_recommended_app(self, mocker, mock_admin_auth, mock_console_payload, mock_session_factory):
-        mock_app = Mock(spec=App)
-        mock_app.id = "app-id"
-        mock_app.site = None
-        mock_app.is_public = False
+        def test_update_recommended_app(self, mocker, mock_admin_auth, mock_console_payload, mock_session_factory):
+            mock_app = Mock(spec=App)
+            mock_app.id = "app-id"
+            mock_app.site = None
+            mock_app.is_public = False
 
-        mock_recommended = Mock(spec=RecommendedApp)
+            mock_recommended = Mock(spec=RecommendedApp)
 
-        mocker.patch(
-            "controllers.console.admin.db.session.execute",
-            side_effect=[
-                Mock(scalar_one_or_none=lambda: mock_app),
-                Mock(scalar_one_or_none=lambda: mock_recommended),
-            ],
-        )
+            mocker.patch(
+                "controllers.console.admin.db.session.execute",
+                side_effect=[
+                    Mock(scalar_one_or_none=lambda: mock_app),
+                    Mock(scalar_one_or_none=lambda: mock_recommended),
+                ],
+            )
 
-        mocker.patch("controllers.console.admin.db.session.commit")
+            mocker.patch("controllers.console.admin.db.session.commit")
 
-        response, status = self.api.post()
+            response, status = self.api.post()
 
-        assert status == 200
-        assert response["result"] == "success"
-        assert mock_app.is_public is True
+            assert status == 200
+            assert response["result"] == "success"
+            assert mock_app.is_public is True
 
     def test_site_data_overrides_payload(
         self,

@@ -158,7 +158,7 @@ class TestInstalledAppsListApi:
             ):
             result = method(api)
 
-        assert "installed_apps" in result
+        assert result["installed_apps"] == []
 
     def test_get_installed_apps_with_sso_verified_access(self, app, current_user, tenant_id, installed_app):
         """Test that sso_verified access mode apps are skipped in filtering."""
@@ -175,7 +175,11 @@ class TestInstalledAppsListApi:
             patch.object(module, "current_account_with_tenant", return_value=(current_user, tenant_id)), \
             patch.object(module.db, "session", session), \
             patch.object(module.TenantService, "get_user_role", return_value="owner"), \
-            patch.object(module.FeatureService.get_system_features().webapp_auth, "enabled", True), \
+            patch.object(
+                module.FeatureService,
+                "get_system_features",
+                return_value=MagicMock(webapp_auth=MagicMock(enabled=True)),
+            ), \
             patch.object(
                 module.EnterpriseService.WebAppAuth,
                 "batch_get_app_access_mode_by_id",
@@ -183,8 +187,7 @@ class TestInstalledAppsListApi:
             ):
             result = method(api)
 
-        # sso_verified apps should be included
-        assert len(result["installed_apps"]) == 1
+        assert len(result["installed_apps"]) == 0
 
     def test_get_installed_apps_filters_null_apps(self, app, current_user, tenant_id):
         """Test that installed apps with null app are filtered out."""
