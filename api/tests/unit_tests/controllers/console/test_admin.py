@@ -24,7 +24,7 @@ def bypass_only_edition_cloud(mocker):
     """
     mocker.patch(
         "controllers.console.wraps.dify_config.EDITION",
-        "CLOUD",
+        new="CLOUD",
     )
 
 
