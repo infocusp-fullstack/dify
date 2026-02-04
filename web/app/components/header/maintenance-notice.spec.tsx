@@ -43,6 +43,10 @@ describe('MaintenanceNotice', () => {
     NOTICE_I18N.href = '#'
   })
 
+  afterAll(() => {
+    windowOpenSpy.mockRestore()
+  })
+
   describe('Rendering', () => {
     it('should render localized content correctly (English)', () => {
       vi.mocked(useLanguage).mockReturnValue('en_US')

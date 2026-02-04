@@ -98,7 +98,7 @@ describe('HeaderWrapper', () => {
       expect(container.firstChild).not.toHaveClass('hidden')
     })
 
-    it('should update hideHeader state via event subcription', () => {
+    it('should update hideHeader state via event subscription', () => {
       vi.mocked(usePathname).mockReturnValue('/some/path/workflow')
       let subscriptionCallback: (v: unknown) => void = () => {}
       mockEventEmitter.useSubscription.mockImplementation((cb) => {
