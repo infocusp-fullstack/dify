@@ -64,10 +64,8 @@ describe('ContentDialog', () => {
     const backdrop = document.querySelector('.bg-app-detail-overlay-bg') as HTMLElement | null
     expect(backdrop).toBeTruthy()
 
-    if (backdrop) {
-      await user.click(backdrop)
-      expect(onClose).toHaveBeenCalledTimes(1)
-    }
+    await user.click(backdrop!)
+    expect(onClose).toHaveBeenCalledTimes(1)
   })
 
   it('applies provided className to the content panel', () => {
