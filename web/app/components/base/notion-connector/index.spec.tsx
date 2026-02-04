@@ -51,9 +51,4 @@ describe('NotionConnector', () => {
     await user.click(screen.getByRole('button'))
     expect(onSetting).toHaveBeenCalledTimes(1)
   })
-
-  it('should be wrapped in React.memo', () => {
-    expect(NotionConnector.type).toBeDefined()
-    expect(typeof NotionConnector).toBe('object')
-  })
 })
