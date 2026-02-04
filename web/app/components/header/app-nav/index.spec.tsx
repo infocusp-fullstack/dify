@@ -118,15 +118,6 @@ const mockAppData = [
     icon_background: null,
     icon_url: null,
   },
-  {
-    id: 'app-3',
-    name: 'App 3',
-    mode: AppModeEnum.ADVANCED_CHAT,
-    icon_type: 'emoji',
-    icon: '💬',
-    icon_background: null,
-    icon_url: null,
-  },
 ]
 
 const createDefaultMocks = () => {
@@ -152,492 +143,268 @@ describe('AppNav', () => {
     createDefaultMocks()
   })
 
-  describe('Rendering', () => {
-    it('should render nav component', () => {
-      render(<AppNav />)
-      expect(screen.getByTestId('nav')).toBeInTheDocument()
+  it('should render navigation', () => {
+    render(<AppNav />)
+    expect(screen.getByTestId('nav')).toBeInTheDocument()
+  })
+
+  it('should open create app modal when clicking create blank button', async () => {
+    const user = userEvent.setup()
+    render(<AppNav />)
+
+    await user.click(screen.getByTestId('create-blank'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('create-app-modal')).toBeInTheDocument()
+    })
+  })
+
+  it('should close modal and refetch apps after successful creation', async () => {
+    const refetchMock = vi.fn()
+    vi.mocked(useInfiniteAppList).mockReturnValue({
+      data: { pages: [{ data: mockAppData }] },
+      fetchNextPage: vi.fn(),
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      refetch: refetchMock,
+    } as unknown as ReturnType<typeof useInfiniteAppList>)
+
+    const user = userEvent.setup()
+    render(<AppNav />)
+
+    await user.click(screen.getByTestId('create-blank'))
+    await waitFor(() => {
+      expect(screen.getByTestId('create-app-modal')).toBeInTheDocument()
     })
 
-    it('should render all modal dialogs', () => {
-      render(<AppNav />)
+    await user.click(screen.getByTestId('create-app-modal'))
+
+    await waitFor(() => {
       expect(screen.queryByTestId('create-app-modal')).not.toBeInTheDocument()
-      expect(screen.queryByTestId('create-app-template-dialog')).not.toBeInTheDocument()
-      expect(screen.queryByTestId('create-from-dsl-modal')).not.toBeInTheDocument()
+      expect(refetchMock).toHaveBeenCalled()
     })
   })
 
-  describe('Create App Modal', () => {
-    it('should open create app modal when onCreate called with blank', async () => {
-      const user = userEvent.setup()
-      render(<AppNav />)
+  it('should open template dialog when clicking create template button', async () => {
+    const user = userEvent.setup()
+    render(<AppNav />)
 
-      const createBlankBtn = screen.getByTestId('create-blank')
-      await user.click(createBlankBtn)
+    await user.click(screen.getByTestId('create-template'))
 
-      await waitFor(() => {
-        expect(screen.getByTestId('create-app-modal')).toBeInTheDocument()
-      })
-    })
-
-    it('should close create app modal', async () => {
-      const user = userEvent.setup()
-      render(<AppNav />)
-
-      await user.click(screen.getByTestId('create-blank'))
-      await waitFor(() => {
-        expect(screen.getByTestId('create-app-modal')).toBeInTheDocument()
-      })
-
-      const modal = screen.getByTestId('create-app-modal')
-      await user.click(modal)
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('create-app-modal')).not.toBeInTheDocument()
-      })
-    })
-
-    it('should call refetch on modal success', async () => {
-      const refetchMock = vi.fn()
-      vi.mocked(useInfiniteAppList).mockReturnValue({
-        data: { pages: [{ data: mockAppData }] },
-        fetchNextPage: vi.fn(),
-        hasNextPage: false,
-        isFetchingNextPage: false,
-        refetch: refetchMock,
-      } as unknown as ReturnType<typeof useInfiniteAppList>)
-
-      const user = userEvent.setup()
-      render(<AppNav />)
-
-      await user.click(screen.getByTestId('create-blank'))
-      await waitFor(() => {
-        expect(screen.getByTestId('create-app-modal')).toBeInTheDocument()
-      })
-
-      const modal = screen.getByTestId('create-app-modal')
-      await user.click(modal)
-
-      await waitFor(() => {
-        expect(refetchMock).toHaveBeenCalled()
-      })
+    await waitFor(() => {
+      expect(screen.getByTestId('create-app-template-dialog')).toBeInTheDocument()
     })
   })
 
-  describe('Create App Template Dialog', () => {
-    it('should open create app template dialog when onCreate called with template', async () => {
-      const user = userEvent.setup()
-      render(<AppNav />)
+  it('should open DSL modal when clicking create DSL button', async () => {
+    const user = userEvent.setup()
+    render(<AppNav />)
 
-      const createTemplateBtn = screen.getByTestId('create-template')
-      await user.click(createTemplateBtn)
+    await user.click(screen.getByTestId('create-dsl'))
 
-      await waitFor(() => {
-        expect(screen.getByTestId('create-app-template-dialog')).toBeInTheDocument()
-      })
-    })
-
-    it('should close create app template dialog', async () => {
-      const user = userEvent.setup()
-      render(<AppNav />)
-
-      await user.click(screen.getByTestId('create-template'))
-      await waitFor(() => {
-        expect(screen.getByTestId('create-app-template-dialog')).toBeInTheDocument()
-      })
-
-      const dialog = screen.getByTestId('create-app-template-dialog')
-      await user.click(dialog)
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('create-app-template-dialog')).not.toBeInTheDocument()
-      })
-    })
-
-    it('should call refetch on template dialog success', async () => {
-      const refetchMock = vi.fn()
-      vi.mocked(useInfiniteAppList).mockReturnValue({
-        data: { pages: [{ data: mockAppData }] },
-        fetchNextPage: vi.fn(),
-        hasNextPage: false,
-        isFetchingNextPage: false,
-        refetch: refetchMock,
-      } as unknown as ReturnType<typeof useInfiniteAppList>)
-
-      const user = userEvent.setup()
-      render(<AppNav />)
-
-      await user.click(screen.getByTestId('create-template'))
-      await waitFor(() => {
-        expect(screen.getByTestId('create-app-template-dialog')).toBeInTheDocument()
-      })
-
-      const dialog = screen.getByTestId('create-app-template-dialog')
-      await user.click(dialog)
-
-      await waitFor(() => {
-        expect(refetchMock).toHaveBeenCalled()
-      })
+    await waitFor(() => {
+      expect(screen.getByTestId('create-from-dsl-modal')).toBeInTheDocument()
     })
   })
 
-  describe('Create From DSL Modal', () => {
-    it('should open create from dsl modal when onCreate called with dsl', async () => {
-      const user = userEvent.setup()
-      render(<AppNav />)
+  it('should load more apps when clicking load more button with more data available', async () => {
+    const fetchNextPageMock = vi.fn()
+    vi.mocked(useInfiniteAppList).mockReturnValue({
+      data: { pages: [{ data: mockAppData }] },
+      fetchNextPage: fetchNextPageMock,
+      hasNextPage: true,
+      isFetchingNextPage: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useInfiniteAppList>)
 
-      const createDslBtn = screen.getByTestId('create-dsl')
-      await user.click(createDslBtn)
+    const user = userEvent.setup()
+    render(<AppNav />)
 
-      await waitFor(() => {
-        expect(screen.getByTestId('create-from-dsl-modal')).toBeInTheDocument()
-      })
-    })
+    await user.click(screen.getByTestId('load-more'))
 
-    it('should close create from dsl modal', async () => {
-      const user = userEvent.setup()
-      render(<AppNav />)
-
-      await user.click(screen.getByTestId('create-dsl'))
-      await waitFor(() => {
-        expect(screen.getByTestId('create-from-dsl-modal')).toBeInTheDocument()
-      })
-
-      const modal = screen.getByTestId('create-from-dsl-modal')
-      await user.click(modal)
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('create-from-dsl-modal')).not.toBeInTheDocument()
-      })
-    })
-
-    it('should call refetch on dsl modal success', async () => {
-      const refetchMock = vi.fn()
-      vi.mocked(useInfiniteAppList).mockReturnValue({
-        data: { pages: [{ data: mockAppData }] },
-        fetchNextPage: vi.fn(),
-        hasNextPage: false,
-        isFetchingNextPage: false,
-        refetch: refetchMock,
-      } as unknown as ReturnType<typeof useInfiniteAppList>)
-
-      const user = userEvent.setup()
-      render(<AppNav />)
-
-      await user.click(screen.getByTestId('create-dsl'))
-      await waitFor(() => {
-        expect(screen.getByTestId('create-from-dsl-modal')).toBeInTheDocument()
-      })
-
-      const modal = screen.getByTestId('create-from-dsl-modal')
-      await user.click(modal)
-
-      await waitFor(() => {
-        expect(refetchMock).toHaveBeenCalled()
-      })
-    })
+    expect(fetchNextPageMock).toHaveBeenCalled()
   })
 
-  describe('Navigation Items', () => {
-    it('should build nav items from appsData when available', async () => {
-      render(<AppNav />)
+  it('should not fetch more apps when no more data available', async () => {
+    const fetchNextPageMock = vi.fn()
+    vi.mocked(useInfiniteAppList).mockReturnValue({
+      data: { pages: [{ data: mockAppData }] },
+      fetchNextPage: fetchNextPageMock,
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useInfiniteAppList>)
 
-      await waitFor(() => {
-        expect(useInfiniteAppList).toHaveBeenCalledWith(
+    const user = userEvent.setup()
+    render(<AppNav />)
+
+    await user.click(screen.getByTestId('load-more'))
+
+    expect(fetchNextPageMock).not.toHaveBeenCalled()
+  })
+
+  it('should generate workflow link for editor workspace with workflow app', () => {
+    vi.mocked(useAppContext).mockReturnValue({
+      isCurrentWorkspaceEditor: true,
+    } as unknown as ReturnType<typeof useAppContext>)
+
+    vi.mocked(useInfiniteAppList).mockReturnValue({
+      data: {
+        pages: [
           {
-            page: 1,
-            limit: 30,
-            name: '',
+            data: [
+              {
+                id: 'workflow-app',
+                name: 'Workflow App',
+                mode: AppModeEnum.WORKFLOW,
+                icon_type: 'emoji',
+                icon: '⚙️',
+                icon_background: null,
+                icon_url: null,
+              },
+            ],
           },
-          { enabled: true },
-        )
-      })
+        ],
+      },
+      fetchNextPage: vi.fn(),
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useInfiniteAppList>)
+
+    render(<AppNav />)
+    expect(screen.getByTestId('nav')).toBeInTheDocument()
+  })
+
+  it('should generate configuration link for editor workspace with non-workflow app', () => {
+    vi.mocked(useAppContext).mockReturnValue({
+      isCurrentWorkspaceEditor: true,
+    } as unknown as ReturnType<typeof useAppContext>)
+
+    vi.mocked(useInfiniteAppList).mockReturnValue({
+      data: {
+        pages: [
+          {
+            data: [
+              {
+                id: 'chat-app',
+                name: 'Chat App',
+                mode: AppModeEnum.AGENT_CHAT,
+                icon_type: 'emoji',
+                icon: '🤖',
+                icon_background: null,
+                icon_url: null,
+              },
+            ],
+          },
+        ],
+      },
+      fetchNextPage: vi.fn(),
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useInfiniteAppList>)
+
+    render(<AppNav />)
+    expect(screen.getByTestId('nav')).toBeInTheDocument()
+  })
+
+  it('should update nav item name when app detail changes', async () => {
+    vi.mocked(useInfiniteAppList).mockReturnValue({
+      data: {
+        pages: [
+          {
+            data: [
+              {
+                id: 'app-1',
+                name: 'App 1',
+                mode: AppModeEnum.AGENT_CHAT,
+                icon_type: 'emoji',
+                icon: '🤖',
+                icon_background: null,
+                icon_url: null,
+              },
+            ],
+          },
+        ],
+      },
+      fetchNextPage: vi.fn(),
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useInfiniteAppList>)
+
+    const { rerender } = render(<AppNav />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('nav')).toBeInTheDocument()
     })
 
-    it('should generate correct links for non-editor workspace', async () => {
-      vi.mocked(useAppContext).mockReturnValue({
-        isCurrentWorkspaceEditor: false,
-      } as unknown as ReturnType<typeof useAppContext>)
-
-      render(<AppNav />)
-
-      await waitFor(() => {
-        expect(useInfiniteAppList).toHaveBeenCalled()
-      })
-    })
-
-    it('should generate workflow links for editor workspace with workflow app', async () => {
-      vi.mocked(useAppContext).mockReturnValue({
-        isCurrentWorkspaceEditor: true,
-      } as unknown as ReturnType<typeof useAppContext>)
-
-      render(<AppNav />)
-
-      await waitFor(() => {
-        expect(useInfiniteAppList).toHaveBeenCalled()
-      })
-    })
-
-    it('should generate configuration links for editor workspace with non-workflow app', async () => {
-      vi.mocked(useAppContext).mockReturnValue({
-        isCurrentWorkspaceEditor: true,
-      } as unknown as ReturnType<typeof useAppContext>)
-
-      vi.mocked(useInfiniteAppList).mockReturnValue({
-        data: {
-          pages: [
-            {
-              data: [
-                {
-                  id: 'app-1',
-                  name: 'App 1',
-                  mode: AppModeEnum.AGENT_CHAT,
-                  icon_type: 'emoji',
-                  icon: '🤖',
-                  icon_background: null,
-                  icon_url: null,
-                },
-              ],
-            },
-          ],
+    vi.mocked(useAppStore).mockImplementation((selector: unknown) =>
+      (selector as (state: unknown) => unknown)({
+        appDetail: {
+          id: 'app-1',
+          name: 'Updated App Name',
         },
-        fetchNextPage: vi.fn(),
-        hasNextPage: false,
-        isFetchingNextPage: false,
-        refetch: vi.fn(),
-      } as unknown as ReturnType<typeof useInfiniteAppList>)
+      }),
+    )
 
-      render(<AppNav />)
+    rerender(<AppNav />)
 
-      await waitFor(() => {
-        expect(useInfiniteAppList).toHaveBeenCalled()
-      })
-    })
-
-    it('should update nav items when appDetail changes', async () => {
-      const { rerender } = render(<AppNav />)
-
-      vi.mocked(useAppStore).mockImplementation((selector: unknown) =>
-        (selector as (state: unknown) => unknown)({
-          appDetail: {
-            id: 'app-1',
-            name: 'Updated App Name',
-          },
-        }),
-      )
-
-      rerender(<AppNav />)
-
-      await waitFor(() => {
-        expect(useAppStore).toHaveBeenCalled()
-      })
-    })
-  })
-
-  describe('Load More', () => {
-    it('should call fetchNextPage when handleLoadMore and hasNextPage is true', async () => {
-      const fetchNextPageMock = vi.fn()
-      vi.mocked(useInfiniteAppList).mockReturnValue({
-        data: { pages: [{ data: mockAppData }] },
-        fetchNextPage: fetchNextPageMock,
-        hasNextPage: true,
-        isFetchingNextPage: false,
-        refetch: vi.fn(),
-      } as unknown as ReturnType<typeof useInfiniteAppList>)
-
-      const user = userEvent.setup()
-      render(<AppNav />)
-
-      const loadMoreBtn = screen.getByTestId('load-more')
-      await user.click(loadMoreBtn)
-
-      await waitFor(() => {
-        expect(fetchNextPageMock).toHaveBeenCalled()
-      })
-    })
-
-    it('should not call fetchNextPage when hasNextPage is false', async () => {
-      const fetchNextPageMock = vi.fn()
-      vi.mocked(useInfiniteAppList).mockReturnValue({
-        data: { pages: [{ data: mockAppData }] },
-        fetchNextPage: fetchNextPageMock,
-        hasNextPage: false,
-        isFetchingNextPage: false,
-        refetch: vi.fn(),
-      } as unknown as ReturnType<typeof useInfiniteAppList>)
-
-      const user = userEvent.setup()
-      render(<AppNav />)
-
-      const loadMoreBtn = screen.getByTestId('load-more')
-      await user.click(loadMoreBtn)
-
-      expect(fetchNextPageMock).not.toHaveBeenCalled()
-    })
-
-    it('should handle undefined onLoadMore gracefully', () => {
-      vi.mocked(useInfiniteAppList).mockReturnValue({
-        data: { pages: [{ data: mockAppData }] },
-        fetchNextPage: vi.fn(),
-        hasNextPage: true,
-        isFetchingNextPage: false,
-        refetch: vi.fn(),
-      } as unknown as ReturnType<typeof useInfiniteAppList>)
-
-      render(<AppNav />)
+    await waitFor(() => {
       expect(screen.getByTestId('nav')).toBeInTheDocument()
     })
   })
 
-  describe('State Management', () => {
-    it('should initialize all modal states as false', () => {
-      render(<AppNav />)
+  it('should refetch on all modal successes', async () => {
+    const refetchMock = vi.fn()
+    vi.mocked(useInfiniteAppList).mockReturnValue({
+      data: { pages: [{ data: mockAppData }] },
+      fetchNextPage: vi.fn(),
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      refetch: refetchMock,
+    } as unknown as ReturnType<typeof useInfiniteAppList>)
 
-      expect(screen.queryByTestId('create-app-modal')).not.toBeInTheDocument()
+    const user = userEvent.setup()
+    render(<AppNav />)
+
+    await user.click(screen.getByTestId('create-template'))
+    await waitFor(() => {
+      expect(screen.getByTestId('create-app-template-dialog')).toBeInTheDocument()
+    })
+
+    await user.click(screen.getByTestId('create-app-template-dialog'))
+
+    await waitFor(() => {
       expect(screen.queryByTestId('create-app-template-dialog')).not.toBeInTheDocument()
+      expect(refetchMock).toHaveBeenCalled()
+    })
+  })
+
+  it('should refetch on DSL modal success', async () => {
+    const refetchMock = vi.fn()
+    vi.mocked(useInfiniteAppList).mockReturnValue({
+      data: { pages: [{ data: mockAppData }] },
+      fetchNextPage: vi.fn(),
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      refetch: refetchMock,
+    } as unknown as ReturnType<typeof useInfiniteAppList>)
+
+    const user = userEvent.setup()
+    render(<AppNav />)
+
+    await user.click(screen.getByTestId('create-dsl'))
+    await waitFor(() => {
+      expect(screen.getByTestId('create-from-dsl-modal')).toBeInTheDocument()
+    })
+
+    await user.click(screen.getByTestId('create-from-dsl-modal'))
+
+    await waitFor(() => {
       expect(screen.queryByTestId('create-from-dsl-modal')).not.toBeInTheDocument()
-    })
-
-    it('should only show one modal at a time', async () => {
-      const user = userEvent.setup()
-      render(<AppNav />)
-
-      await user.click(screen.getByTestId('create-blank'))
-      await waitFor(() => {
-        expect(screen.getByTestId('create-app-modal')).toBeInTheDocument()
-      })
-
-      expect(screen.queryByTestId('create-app-template-dialog')).not.toBeInTheDocument()
-      expect(screen.queryByTestId('create-from-dsl-modal')).not.toBeInTheDocument()
-    })
-  })
-
-  describe('useInfiniteAppList Hook', () => {
-    it('should enable infinite app list when appId exists', () => {
-      vi.mocked(useParams).mockReturnValue({ appId: 'app-1' } as unknown as ReturnType<typeof useParams>)
-
-      render(<AppNav />)
-
-      expect(useInfiniteAppList).toHaveBeenCalledWith(
-        expect.any(Object),
-        { enabled: true },
-      )
-    })
-
-    it('should disable infinite app list when appId is not provided', () => {
-      vi.mocked(useParams).mockReturnValue({ appId: undefined } as unknown as ReturnType<typeof useParams>)
-
-      render(<AppNav />)
-
-      expect(useInfiniteAppList).toHaveBeenCalledWith(
-        expect.any(Object),
-        { enabled: false },
-      )
-    })
-  })
-
-  describe('Edge Cases', () => {
-    it('should handle empty appsData', () => {
-      vi.mocked(useInfiniteAppList).mockReturnValue({
-        data: undefined,
-        fetchNextPage: vi.fn(),
-        hasNextPage: false,
-        isFetchingNextPage: false,
-        refetch: vi.fn(),
-      } as unknown as ReturnType<typeof useInfiniteAppList>)
-
-      render(<AppNav />)
-      expect(screen.getByTestId('nav')).toBeInTheDocument()
-    })
-
-    it('should handle appsData with no pages', () => {
-      vi.mocked(useInfiniteAppList).mockReturnValue({
-        data: { pages: [] },
-        fetchNextPage: vi.fn(),
-        hasNextPage: false,
-        isFetchingNextPage: false,
-        refetch: vi.fn(),
-      } as unknown as ReturnType<typeof useInfiniteAppList>)
-
-      render(<AppNav />)
-      expect(screen.getByTestId('nav')).toBeInTheDocument()
-    })
-
-    it('should handle appsData with empty pages', () => {
-      vi.mocked(useInfiniteAppList).mockReturnValue({
-        data: { pages: [{ data: [] }] },
-        fetchNextPage: vi.fn(),
-        hasNextPage: false,
-        isFetchingNextPage: false,
-        refetch: vi.fn(),
-      } as unknown as ReturnType<typeof useInfiniteAppList>)
-
-      render(<AppNav />)
-      expect(screen.getByTestId('nav')).toBeInTheDocument()
-    })
-
-    it('should handle null appDetail', () => {
-      vi.mocked(useAppStore).mockImplementation((selector: unknown) =>
-        (selector as (state: unknown) => unknown)({ appDetail: null }),
-      )
-
-      render(<AppNav />)
-      expect(screen.getByTestId('nav')).toBeInTheDocument()
-    })
-
-    it('should handle app without matching id in appDetail', async () => {
-      vi.mocked(useAppStore).mockImplementation((selector: unknown) =>
-        (selector as (state: unknown) => unknown)({
-          appDetail: {
-            id: 'non-existent-id',
-            name: 'Updated Name',
-          },
-        }),
-      )
-
-      const { rerender } = render(<AppNav />)
-      rerender(<AppNav />)
-
-      expect(screen.getByTestId('nav')).toBeInTheDocument()
-    })
-
-    it('should handle undefined isCurrentWorkspaceEditor', () => {
-      vi.mocked(useAppContext).mockReturnValue({
-        isCurrentWorkspaceEditor: undefined,
-      } as unknown as ReturnType<typeof useAppContext>)
-
-      render(<AppNav />)
-      expect(screen.getByTestId('nav')).toBeInTheDocument()
-    })
-  })
-
-  describe('Multiple Pages Handling', () => {
-    it('should flatten multiple pages from infinite scroll', () => {
-      vi.mocked(useInfiniteAppList).mockReturnValue({
-        data: {
-          pages: [
-            { data: [mockAppData[0]] },
-            { data: [mockAppData[1]] },
-            { data: [mockAppData[2]] },
-          ],
-        },
-        fetchNextPage: vi.fn(),
-        hasNextPage: false,
-        isFetchingNextPage: false,
-        refetch: vi.fn(),
-      } as unknown as ReturnType<typeof useInfiniteAppList>)
-
-      render(<AppNav />)
-      expect(screen.getByTestId('nav')).toBeInTheDocument()
-    })
-  })
-
-  describe('openModal Function', () => {
-    it('should handle invalid modal state gracefully', () => {
-      render(<AppNav />)
-
-      expect(screen.queryByTestId('create-app-modal')).not.toBeInTheDocument()
-      expect(screen.queryByTestId('create-app-template-dialog')).not.toBeInTheDocument()
-      expect(screen.queryByTestId('create-from-dsl-modal')).not.toBeInTheDocument()
+      expect(refetchMock).toHaveBeenCalled()
     })
   })
 })
