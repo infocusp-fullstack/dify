@@ -161,14 +161,28 @@ class TestMagicImportWarnings:
         platform_name,
         expected_message,
     ):
-        sys.modules.pop("magic", None)
+        # Save original state
+        orig_magic = sys.modules.get("magic")
+        orig_helpers = sys.modules.get(helpers.__name__)
+        
+        try:
+            sys.modules.pop("magic", None)
 
-        monkeypatch.setitem(sys.modules, "magic", None)
+            monkeypatch.setitem(sys.modules, "magic", None)
 
-        monkeypatch.setattr(helpers.platform, "system", lambda: platform_name)
+            monkeypatch.setattr(helpers.platform, "system", lambda: platform_name)
 
-        with pytest.warns(UserWarning, match="To use python-magic") as warning:
-            importlib.reload(helpers)
+            with pytest.warns(UserWarning, match="To use python-magic") as warning:
+                importlib.reload(helpers)
 
-        assert expected_message in str(warning[0].message)
-        assert helpers.magic is None
+            assert expected_message in str(warning[0].message)
+            assert helpers.magic is None
+        finally:
+            if orig_magic is None:
+                sys.modules.pop("magic", None)
+            else:
+                sys.modules["magic"] = orig_magic
+            
+            if orig_helpers is not None:
+                sys.modules[helpers.__name__] = orig_helpers
+                importlib.reload(orig_helpers)
