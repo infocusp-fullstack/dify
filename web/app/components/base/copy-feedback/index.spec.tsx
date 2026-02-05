@@ -25,6 +25,11 @@ vi.mock('foxact/use-clipboard', () => ({
 }))
 
 describe('copy feedback component', () => {
+  beforeEach(() => {
+    copied = false
+    vi.resetAllMocks()
+  })
+
   it('renders normally', () => {
     const { container } = render(<CopyFeedback content="this is some test content for the copy feedback component" />)
     expect(screen.getByTestId('tooltip-mock'))
@@ -62,6 +67,7 @@ describe('copy feedback component', () => {
 describe('copy feedback new component', () => {
   beforeEach(() => {
     copied = false
+    vi.resetAllMocks()
   })
 
   it('renders normally', () => {
