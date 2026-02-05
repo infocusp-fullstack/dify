@@ -21,13 +21,18 @@ vi.mock('react-dom', async () => {
   }
 })
 
+const onCancel = vi.fn()
+const onConfirm = vi.fn()
+
 describe('Confirm Component', () => {
-  const onCancel = vi.fn()
-  const onConfirm = vi.fn()
-  it('renders confirm correctly', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('renders confirm correctly', async () => {
     render(<Confirm isShow={true} title="test title" onCancel={onCancel} onConfirm={onConfirm} />)
-    expect(screen.findByTestId('tooltip-mock'))
-    expect(screen.findByText('test title'))
+    expect(await screen.findByTestId('tooltip-mock')).toBeInTheDocument()
+    expect(await screen.findByText('test title')).toBeInTheDocument()
   })
 
   it('does not render on isShow false', () => {
