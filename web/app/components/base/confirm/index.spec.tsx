@@ -63,12 +63,14 @@ describe('Confirm Component', () => {
   })
 
   it('showCancel prop works', () => {
-    const { container } = render(<Confirm isShow={true} title="test title" onCancel={onCancel} onConfirm={onConfirm} showCancel={false} />)
-    expect(container.querySelector('.btn')?.innerHTML).toBe('operation.confirm')
+    render(<Confirm isShow={true} title="test title" onCancel={onCancel} onConfirm={onConfirm} showCancel={false} />)
+    expect(screen.getByRole('button', { name: 'operation.confirm' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'operation.cancel' })).not.toBeInTheDocument()
   })
 
   it('showConfirm prop works', () => {
-    const { container } = render(<Confirm isShow={true} title="test title" onCancel={onCancel} onConfirm={onConfirm} showConfirm={false} />)
-    expect(container.querySelector('.btn')?.innerHTML).toBe('operation.cancel')
+    render(<Confirm isShow={true} title="test title" onCancel={onCancel} onConfirm={onConfirm} showConfirm={false} />)
+    expect(screen.getByRole('button', { name: 'operation.cancel' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'operation.confirm' })).not.toBeInTheDocument()
   })
 })
