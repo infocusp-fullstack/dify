@@ -175,6 +175,7 @@ describe('EmbeddedChatbot Component', () => {
     expect(screen.getByTestId('header')).toHaveTextContent('Mobile:true')
     expect(screen.getByText('chat.poweredBy')).toBeInTheDocument()
     const mainDiv = container.querySelector('.flex.flex-col.rounded-2xl')
+    expect(mainDiv).toBeInTheDocument()
     expect(mainDiv).toHaveStyle('background: red')
   })
 
