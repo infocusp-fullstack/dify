@@ -55,14 +55,24 @@ describe('ProgressCircle', () => {
   it('uses large arc flag when percentage is greater than 50', () => {
     const { container } = render(<ProgressCircle percentage={75} />)
     const path = container.querySelector('path')!
-    expect(path.getAttribute('d')).toContain('A')
-    expect(path.getAttribute('d')).toContain('1')
+    const d = path.getAttribute('d') || ''
+    expect(d).toContain('A')
+    // Extract tokens after the first 'A' and normalize separators
+    const afterA = d.slice(d.indexOf('A') + 1)
+    const tokens = afterA.replace(/,/g, ' ').trim().split(/\s+/)
+    // Arc syntax: A rx ry x-axis-rotation large-arc-flag sweep-flag x y
+    const largeArcFlag = tokens[3]
+    expect(largeArcFlag).toBe('1')
   })
 
   it('uses small arc flag when percentage is 50 or less', () => {
     const { container } = render(<ProgressCircle percentage={25} />)
     const path = container.querySelector('path')!
-    expect(path.getAttribute('d')).toContain('A')
-    expect(path.getAttribute('d')).toContain('0')
+    const d = path.getAttribute('d') || ''
+    expect(d).toContain('A')
+    const afterA = d.slice(d.indexOf('A') + 1)
+    const tokens = afterA.replace(/,/g, ' ').trim().split(/\s+/)
+    const largeArcFlag = tokens[3]
+    expect(largeArcFlag).toBe('0')
   })
 })
