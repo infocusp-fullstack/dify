@@ -5,6 +5,8 @@ from enum import StrEnum
 from flask_restx import Namespace
 from pydantic import BaseModel, TypeAdapter
 
+from controllers.console import console_ns
+
 DEFAULT_REF_TEMPLATE_SWAGGER_2_0 = "#/definitions/{model}"
 
 
@@ -22,9 +24,6 @@ def register_schema_models(namespace: Namespace, *models: type[BaseModel]) -> No
 
 
 def get_or_create_model(model_name: str, field_def):
-    # Lazy import to avoid circular dependency
-    from controllers.console import console_ns
-
     existing = console_ns.models.get(model_name)
     if existing is None:
         existing = console_ns.model(model_name, field_def)
