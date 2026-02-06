@@ -26,7 +26,6 @@ from controllers.console.datasets.datasets_document import (
 from controllers.console.datasets.error import (
     DocumentAlreadyFinishedError,
     DocumentIndexingError,
-    IndexingEstimateError,
     InvalidActionError,
     InvalidMetadataError,
 )
