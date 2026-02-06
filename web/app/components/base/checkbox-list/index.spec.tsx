@@ -74,6 +74,7 @@ describe('checkbox list component', () => {
         options={options}
         value={[]}
         onChange={onChange}
+        showSelectAll
       />,
     )
 
@@ -205,6 +206,5 @@ describe('checkbox list component', () => {
     await userEvent.type(screen.getByTestId('search-input'), 'ban')
     await userEvent.click(screen.getByRole('button'))
     expect(screen.getByTestId('search-input')).toHaveValue('')
-    screen.debug()
   })
 })
