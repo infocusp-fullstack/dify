@@ -203,12 +203,13 @@ describe('Header Component', () => {
       Object.defineProperty(window, 'top', {
         value: { postMessage: vi.fn() },
         writable: true,
+        configurable: true,
       })
     })
 
     afterAll(() => {
       if (originalWindowTop) {
-        Object.defineProperty(window, 'top', { value: originalWindowTop, writable: true })
+        Object.defineProperty(window, 'top', { value: originalWindowTop, writable: true, configurable: true })
       }
     })
 
