@@ -37,6 +37,7 @@ type MockContextValue = {
 type MockUseChatReturn = {
   chatList: unknown[]
   setTargetMessageId: (id: string) => void
+  handleSwitchSibling?: (id: string) => void
   handleSend: (url: string, data: unknown, options?: unknown) => void
   handleStop: () => void
   isResponding: boolean
@@ -179,6 +180,7 @@ describe('ChatWrapper', () => {
   const defaultUseChat: MockUseChatReturn = {
     chatList: [],
     setTargetMessageId: vi.fn(),
+    handleSwitchSibling: vi.fn(),
     handleSend: mockHandleSend,
     handleStop: vi.fn(),
     isResponding: false,
@@ -254,6 +256,7 @@ describe('ChatWrapper', () => {
     mockUseChat.mockReturnValue({
       ...defaultUseChat,
       setTargetMessageId: mockSetTarget,
+      handleSwitchSibling: mockSetTarget,
     })
 
     render(<ChatWrapper />)
