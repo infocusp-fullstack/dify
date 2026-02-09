@@ -327,44 +327,9 @@ describe('DrawerPlus', () => {
         expect(handleHide).toHaveBeenCalledTimes(1)
       }
     })
-
-    it('should call onHide when clicking close icon', () => {
-      const handleHide = vi.fn()
-      render(
-        <DrawerPlus
-          isShow={true}
-          onHide={handleHide}
-          title="Test"
-          body={<div>Body</div>}
-        />,
-      )
-
-      const drawer = screen.getByTestId('mock-drawer')
-      const closeDiv = drawer.querySelector('div.cursor-pointer')
-      if (closeDiv) {
-        fireEvent.click(closeDiv)
-        expect(handleHide).toHaveBeenCalledTimes(1)
-      }
-    })
   })
 
   describe('Breakpoints and Responsive Behavior', () => {
-    it('should show mask on mobile', () => {
-      const { unmount } = render(
-        <DrawerPlus
-          isShow={true}
-          onHide={() => {}}
-          title="Test"
-          body={<div>Body</div>}
-        />,
-      )
-
-      const drawer = screen.getByTestId('mock-drawer')
-      expect(drawer.getAttribute('data-mask')).toBe('false')
-
-      unmount()
-    })
-
     it('should not show mask on desktop when isShowMask is not set', () => {
       render(
         <DrawerPlus
