@@ -48,7 +48,7 @@ vi.mock('@/app/components/workflow/nodes/_base/components/editor/code-editor', (
   default: ({ onChange, value, placeholder }: { onChange: (v: string) => void, value: string, placeholder?: React.ReactNode }) => (
     <div>
       <textarea data-testid="mock-code-editor" value={value} onChange={e => onChange(e.target.value)} />
-      {placeholder && <div data-testid="mock-code-editor-placeholder">{React.isValidElement<{ children?: React.ReactNode }>(placeholder) ? placeholder.props.children : ''}</div>}
+      {!!placeholder && <div data-testid="mock-code-editor-placeholder">{React.isValidElement<{ children?: React.ReactNode }>(placeholder) ? placeholder.props.children : ''}</div>}
     </div>
   ),
 }))
