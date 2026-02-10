@@ -240,17 +240,21 @@ describe('Mermaid Flowchart Component', () => {
 describe('Mermaid Flowchart Component Module Isolation', () => {
   const mockCode = 'graph TD\n  A-->B'
 
-  beforeEach(() => {
+  let mermaidFresh: typeof mermaid
+
+  beforeEach(async () => {
     vi.resetModules()
     vi.clearAllMocks()
-    vi.mocked(mermaid.initialize).mockImplementation(() => {})
+    const mod = await import('mermaid') as unknown as { default: typeof mermaid } | typeof mermaid
+    mermaidFresh = 'default' in mod ? mod.default : mod
+    vi.mocked(mermaidFresh.initialize).mockImplementation(() => {})
   })
 
   it('handles initialization failure', async () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const { default: FlowchartFresh } = await import('./index')
 
-    vi.mocked(mermaid.initialize).mockImplementationOnce(() => {
+    vi.mocked(mermaidFresh.initialize).mockImplementationOnce(() => {
       throw new Error('Init fail')
     })
 
@@ -263,9 +267,9 @@ describe('Mermaid Flowchart Component Module Isolation', () => {
   })
 
   it('handles mermaidAPI missing fallback', async () => {
-    const originalMermaidAPI = mermaid.mermaidAPI
+    const originalMermaidAPI = mermaidFresh.mermaidAPI
     // @ts-expect-error need to set undefined for testing
-    mermaid.mermaidAPI = undefined
+    mermaidFresh.mermaidAPI = undefined
 
     const { default: FlowchartFresh } = await import('./index')
 
@@ -283,7 +287,7 @@ describe('Mermaid Flowchart Component Module Isolation', () => {
       expect(screen.getByText('test-svg')).toBeInTheDocument()
     }, { timeout: 3000 })
 
-    mermaid.mermaidAPI = originalMermaidAPI
+    mermaidFresh.mermaidAPI = originalMermaidAPI
   })
 
   it('handles configuration failure', async () => {
@@ -294,7 +298,7 @@ describe('Mermaid Flowchart Component Module Isolation', () => {
       render(<FlowchartFresh PrimitiveCode={mockCode} />)
     })
 
-    vi.mocked(mermaid.initialize).mockImplementation(() => {
+    vi.mocked(mermaidFresh.initialize).mockImplementation(() => {
       throw new Error('Config fail')
     })
 
