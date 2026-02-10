@@ -202,12 +202,14 @@ describe('Mermaid Flowchart Component', () => {
 
   it('renders mindmap and sequenceDiagram charts', async () => {
     const mindmapCode = 'mindmap\n  root\n    topic1'
-    await act(async () => {
-      render(<Flowchart PrimitiveCode={mindmapCode} />)
+    const { unmount } = await act(async () => {
+      return render(<Flowchart PrimitiveCode={mindmapCode} />)
     })
     await waitFor(() => {
       expect(screen.getByText('test-svg')).toBeInTheDocument()
     }, { timeout: 3000 })
+
+    unmount()
 
     const sequenceCode = 'sequenceDiagram\n  A->>B: Hello'
     await act(async () => {
