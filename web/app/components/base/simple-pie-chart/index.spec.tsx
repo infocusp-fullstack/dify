@@ -1,9 +1,10 @@
+import type { CSSProperties } from 'react'
 import { render, screen } from '@testing-library/react'
 import SimplePieChart from '.'
 
 // Mock echarts-for-react
 vi.mock('echarts-for-react', () => ({
-  default: ({ option, style, className }: { option: unknown, style?: React.CSSProperties, className?: string }) => (
+  default: ({ option, style, className }: { option: unknown, style?: CSSProperties, className?: string }) => (
     <div data-testid="mock-echarts" data-option={JSON.stringify(option)} style={style} className={className} />
   ),
 }))
