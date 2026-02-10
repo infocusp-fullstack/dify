@@ -25,7 +25,8 @@ describe('CustomPopover', () => {
   })
 
   afterEach(() => {
-    vi.clearAllTimers()
+    if (vi.isFakeTimers?.())
+      vi.clearAllTimers()
     vi.restoreAllMocks()
     vi.useRealTimers()
   })
