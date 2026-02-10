@@ -79,20 +79,23 @@ describe('ShareQRCode', () => {
     const originalToDataURL = HTMLCanvasElement.prototype.toDataURL
     HTMLCanvasElement.prototype.toDataURL = vi.fn(() => 'data:image/png;base64,test')
 
-    const { container } = render(<ShareQRCode content={content} />)
+    try {
+      const { container } = render(<ShareQRCode content={content} />)
 
-    const trigger = container.querySelector('.relative.h-6.w-6')
-    await user.click(trigger!)
+      const trigger = container.querySelector('.relative.h-6.w-6')
+      await user.click(trigger!)
 
-    const downloadBtn = screen.getByText('appOverview.overview.appInfo.qrcode.download')
-    await user.click(downloadBtn)
+      const downloadBtn = screen.getByText('appOverview.overview.appInfo.qrcode.download')
+      await user.click(downloadBtn)
 
-    expect(downloadUrl).toHaveBeenCalledWith({
-      url: 'data:image/png;base64,test',
-      fileName: 'qrcode.png',
-    })
-
-    HTMLCanvasElement.prototype.toDataURL = originalToDataURL
+      expect(downloadUrl).toHaveBeenCalledWith({
+        url: 'data:image/png;base64,test',
+        fileName: 'qrcode.png',
+      })
+    }
+    finally {
+      HTMLCanvasElement.prototype.toDataURL = originalToDataURL
+    }
   })
 
   it('does not call downloadUrl if canvas is missing', async () => {
