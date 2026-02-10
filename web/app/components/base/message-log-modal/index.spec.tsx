@@ -76,15 +76,15 @@ describe('MessageLogModal', () => {
   it('calls onCancel when close icon is clicked', () => {
     const { container } = render(<MessageLogModal width={800} onCancel={onCancel} currentLogItem={mockLog} />)
     const closeButton = container.querySelector('span.absolute.right-3')
-    if (closeButton)
-      fireEvent.click(closeButton)
+    expect(closeButton).toBeInTheDocument()
+    fireEvent.click(closeButton!)
     expect(onCancel).toHaveBeenCalledTimes(1)
   })
 
   it('calls onCancel when clicked away', () => {
     render(<MessageLogModal width={800} onCancel={onCancel} currentLogItem={mockLog} />)
-    if (clickAwayHandler)
-      clickAwayHandler()
+    expect(clickAwayHandler).toBeTruthy()
+    clickAwayHandler!()
     expect(onCancel).toHaveBeenCalledTimes(1)
   })
 
