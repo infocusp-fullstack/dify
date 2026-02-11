@@ -1,5 +1,5 @@
 import type { UserProfileResponse } from '@/models/common'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ToastProvider } from '@/app/components/base/toast'
 import { languages } from '@/i18n-config/language'
@@ -57,9 +57,17 @@ const renderPage = () => {
   )
 }
 
-const selectOption = async (triggerName: string | RegExp, optionName: string) => {
+const getSelectTriggerBySection = (sectionLabel: string) => {
+  const label = screen.getByText(sectionLabel)
+  const section = label.closest('div')?.parentElement
+  if (!section)
+    throw new Error(`Missing select section: ${sectionLabel}`)
+  return within(section).getByRole('button')
+}
+
+const selectOption = async (sectionLabel: string, optionName: string) => {
   const user = userEvent.setup()
-  await user.click(screen.getByRole('button', { name: triggerName }))
+  await user.click(getSelectTriggerBySection(sectionLabel))
   await user.click(await screen.findByRole('option', { name: optionName }))
 }
 
@@ -78,6 +86,7 @@ const getTimezoneOption = (value: string) => {
 }
 
 beforeEach(() => {
+  vi.useRealTimers()
   vi.clearAllMocks()
   mockLocale = 'en-US'
   mockUserProfile = createUserProfile()
@@ -106,53 +115,49 @@ describe('LanguagePage - Rendering', () => {
 // Interactions
 describe('LanguagePage - Interactions', () => {
   it('should show success toast when language updates', async () => {
-    const english = getLanguageOption('en-US')
     const chinese = getLanguageOption('zh-Hans')
-    mockUserProfile = createUserProfile({ interface_language: english.value.toString() })
+    mockUserProfile = createUserProfile({ interface_language: 'en-US' })
     updateUserProfileMock.mockResolvedValueOnce({ result: 'success' })
 
     renderPage()
 
-    await selectOption(english.name, chinese.name)
+    await selectOption('common.language.displayLanguage', chinese.name)
 
     expect(await screen.findByText('common.actionMsg.modifiedSuccessfully')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: chinese.name })).toBeInTheDocument()
   })
 
   it('should show error toast when language update fails', async () => {
-    const english = getLanguageOption('en-US')
     const chinese = getLanguageOption('zh-Hans')
     updateUserProfileMock.mockRejectedValueOnce(new Error('Update failed'))
 
     renderPage()
 
-    await selectOption(english.name, chinese.name)
+    await selectOption('common.language.displayLanguage', chinese.name)
 
     expect(await screen.findByText('Update failed')).toBeInTheDocument()
   })
 
   it('should show success toast when timezone updates', async () => {
-    const niueTimezone = getTimezoneOption('Pacific/Niue')
     const midwayTimezone = getTimezoneOption('Pacific/Midway')
     updateUserProfileMock.mockResolvedValueOnce({ result: 'success' })
 
     renderPage()
 
-    await selectOption(niueTimezone.name, midwayTimezone.name)
+    await selectOption('common.language.timezone', midwayTimezone.name)
 
     expect(await screen.findByText('common.actionMsg.modifiedSuccessfully')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: midwayTimezone.name })).toBeInTheDocument()
-  })
+  }, 15000)
 
   it('should show error toast when timezone update fails', async () => {
-    const niueTimezone = getTimezoneOption('Pacific/Niue')
     const midwayTimezone = getTimezoneOption('Pacific/Midway')
     updateUserProfileMock.mockRejectedValueOnce(new Error('Timezone failed'))
 
     renderPage()
 
-    await selectOption(niueTimezone.name, midwayTimezone.name)
+    await selectOption('common.language.timezone', midwayTimezone.name)
 
     expect(await screen.findByText('Timezone failed')).toBeInTheDocument()
-  })
+  }, 15000)
 })

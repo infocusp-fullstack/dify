@@ -46,7 +46,6 @@ describe('EditWorkspaceModal', () => {
 
   it('should call updateWorkspaceInfo and onCancel on confirm', async () => {
     vi.mocked(updateWorkspaceInfo).mockResolvedValue({} as ICurrentWorkspace)
-    const assignSpy = vi.spyOn(window.location, 'assign').mockImplementation(() => {})
 
     render(<EditWorkspaceModal onCancel={mockOnCancel} />)
     const input = screen.getByPlaceholderText(/account\.workspaceNamePlaceholder/i)
@@ -66,7 +65,6 @@ describe('EditWorkspaceModal', () => {
       expect(mockNotify).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }))
       expect(mockOnCancel).toHaveBeenCalled()
     })
-    assignSpy.mockRestore()
   })
 
   it('should show error notify if updateWorkspaceInfo fails', async () => {
