@@ -58,7 +58,9 @@ jobs:
 
   api-coverage-report:
     name: API Coverage Report
-    needs: check-changes
+    needs:
+    - check-changes
+    - api-tests
     if: github.event_name == 'pull_request' &&
       needs.check-changes.outputs.api-changed == 'true'
     uses: ./.github/workflows/api-coverage-report.yml
