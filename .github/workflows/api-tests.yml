@@ -97,15 +97,15 @@ jobs:
           name: main-api-coverage
           path: coverage.json
 
-      - name: Generate badge JSON (main only)
-        if: github.ref == 'refs/heads/main' && matrix.python-version == '3.12'
+      - name: Generate badge JSON
+        if: github.ref == 'refs/heads/test/fake_main' && matrix.python-version == '3.12'
         run: |
           python .github/scripts/generate_module_badges.py \
             coverage.json \
             main
 
-      - name: Deploy badges (main only)
-        if: github.ref == 'refs/heads/main' && matrix.python-version == '3.12'
+      - name: Deploy badges
+        if: github.ref == 'refs/heads/test/fake_main' && matrix.python-version == '3.12'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
