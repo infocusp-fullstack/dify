@@ -26,11 +26,22 @@ jobs:
       - name: Install dependencies
         run: uv sync --project api --dev
 
-      - name: Run tests with coverage (PR)
+      - name: Run tests with coverage
+        env:
+          STORAGE_TYPE: opendal
+          OPENDAL_SCHEME: fs
+          OPENDAL_FS_ROOT: /tmp/dify-storage
         run: |
           uv run --project api pytest \
             --cov=api \
-            --cov-report=json
+            --cov-report=json \
+            --cov-report=term \
+            -n auto \
+            --timeout "${PYTEST_TIMEOUT:-180}" \
+            api/tests/integration_tests/workflow \
+            api/tests/integration_tests/tools \
+            api/tests/test_containers_integration_tests \
+            api/tests/unit_tests
 
       - name: Rename PR coverage
         run: mv coverage.json pr_coverage.json

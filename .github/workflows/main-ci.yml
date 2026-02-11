@@ -2,11 +2,9 @@ name: Main CI Pipeline
 
 on:
   pull_request:
-    branches: ["main"]
+    branches: ["test/fake_main"]
   push:
-    branches: 
-    - main
-    - test/fake_main
+    branches: ["test/fake_main"]
 
 permissions:
   contents: write
@@ -61,7 +59,8 @@ jobs:
   api-coverage-report:
     name: API Coverage Report
     needs: check-changes
-    if: needs.check-changes.outputs.api-changed == 'true'
+    if: github.event_name == 'pull_request' &&
+      needs.check-changes.outputs.api-changed == 'true'
     uses: ./.github/workflows/api-coverage-report.yml
 
   web-tests:
