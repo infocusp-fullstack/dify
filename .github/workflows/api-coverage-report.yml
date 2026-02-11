@@ -1,0 +1,59 @@
+name: API Coverage Report
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Setup UV and Python
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          python-version: "3.12"
+          cache-dependency-glob: api/uv.lock
+
+      - name: Install dependencies
+        run: uv sync --project api --dev
+
+      - name: Run tests with coverage (PR)
+        run: |
+          uv run --project api pytest \
+            --cov=api \
+            --cov-report=json
+
+      - name: Rename PR coverage
+        run: mv coverage.json pr_coverage.json
+
+      - name: Download main coverage artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: main-ci.yml
+          branch: test/fake_main
+          name: main-api-coverage
+          path: .
+
+      - name: Rename main coverage
+        run: mv coverage.json main_coverage.json
+
+      - name: Generate Coverage Report
+        run: |
+          python .github/scripts/compare_api_coverage.py \
+            pr_coverage.json \
+            main_coverage.json \
+            > coverage_comment.md
+
+      - name: Comment on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: coverage_comment.md
