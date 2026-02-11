@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Download PR coverage
-        uses: dawidd6/action-download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: pr-api-coverage
           path: .
@@ -28,7 +28,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: main-ci.yml
-          branch: main
+          branch: test/fake_main
           name: main-api-coverage
           path: .
 
