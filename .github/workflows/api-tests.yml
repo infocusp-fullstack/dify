@@ -99,9 +99,10 @@ jobs:
             echo "</details>"
           } >> $GITHUB_STEP_SUMMARY
 
-      - name: Upload coverage artifact (main only)
-        if: github.ref == 'refs/heads/test/fake_main'
+      - name: Upload coverage artifact (fake main only)
+        if: github.ref == 'refs/heads/test/fake_main' && matrix.python-version == '3.12'
         uses: actions/upload-artifact@v4
         with:
           name: main-api-coverage
           path: coverage.json
+          
