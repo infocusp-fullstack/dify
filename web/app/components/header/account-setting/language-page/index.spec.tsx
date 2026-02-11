@@ -1,0 +1,158 @@
+import type { UserProfileResponse } from '@/models/common'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { ToastProvider } from '@/app/components/base/toast'
+import { languages } from '@/i18n-config/language'
+import { updateUserProfile } from '@/service/common'
+import { timezones } from '@/utils/timezone'
+import LanguagePage from './index'
+
+const mockRefresh = vi.fn()
+const mockMutateUserProfile = vi.fn()
+let mockLocale: string | undefined = 'en-US'
+let mockUserProfile: UserProfileResponse
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ refresh: mockRefresh }),
+}))
+
+vi.mock('@/context/app-context', () => ({
+  useAppContext: () => ({
+    userProfile: mockUserProfile,
+    mutateUserProfile: mockMutateUserProfile,
+  }),
+}))
+
+vi.mock('@/context/i18n', () => ({
+  useLocale: () => mockLocale,
+}))
+
+vi.mock('@/service/common', () => ({
+  updateUserProfile: vi.fn(),
+}))
+
+vi.mock('@/i18n-config', () => ({
+  setLocaleOnClient: vi.fn(),
+}))
+
+const updateUserProfileMock = vi.mocked(updateUserProfile)
+
+const createUserProfile = (overrides: Partial<UserProfileResponse> = {}): UserProfileResponse => ({
+  id: 'user-id',
+  name: 'Test User',
+  email: 'test@example.com',
+  avatar: '',
+  avatar_url: null,
+  is_password_set: false,
+  interface_language: 'en-US',
+  timezone: 'Pacific/Niue',
+  ...overrides,
+})
+
+const renderPage = () => {
+  render(
+    <ToastProvider>
+      <LanguagePage />
+    </ToastProvider>,
+  )
+}
+
+const selectOption = async (triggerName: string | RegExp, optionName: string) => {
+  const user = userEvent.setup()
+  await user.click(screen.getByRole('button', { name: triggerName }))
+  await user.click(await screen.findByRole('option', { name: optionName }))
+}
+
+const getLanguageOption = (value: string) => {
+  const option = languages.find(item => item.value === value)
+  if (!option)
+    throw new Error(`Missing language option: ${value}`)
+  return option
+}
+
+const getTimezoneOption = (value: string) => {
+  const option = timezones.find(item => item.value === value)
+  if (!option)
+    throw new Error(`Missing timezone option: ${value}`)
+  return option
+}
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  mockLocale = 'en-US'
+  mockUserProfile = createUserProfile()
+})
+
+// Rendering
+describe('LanguagePage - Rendering', () => {
+  it('should render default language and timezone labels', () => {
+    const english = getLanguageOption('en-US')
+    const niueTimezone = getTimezoneOption('Pacific/Niue')
+    mockLocale = undefined
+    mockUserProfile = createUserProfile({
+      interface_language: english.value.toString(),
+      timezone: niueTimezone.value.toString(),
+    })
+
+    renderPage()
+
+    expect(screen.getByText('common.language.displayLanguage')).toBeInTheDocument()
+    expect(screen.getByText('common.language.timezone')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: english.name })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: niueTimezone.name })).toBeInTheDocument()
+  })
+})
+
+// Interactions
+describe('LanguagePage - Interactions', () => {
+  it('should show success toast when language updates', async () => {
+    const english = getLanguageOption('en-US')
+    const chinese = getLanguageOption('zh-Hans')
+    mockUserProfile = createUserProfile({ interface_language: english.value.toString() })
+    updateUserProfileMock.mockResolvedValueOnce({ result: 'success' })
+
+    renderPage()
+
+    await selectOption(english.name, chinese.name)
+
+    expect(await screen.findByText('common.actionMsg.modifiedSuccessfully')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: chinese.name })).toBeInTheDocument()
+  })
+
+  it('should show error toast when language update fails', async () => {
+    const english = getLanguageOption('en-US')
+    const chinese = getLanguageOption('zh-Hans')
+    updateUserProfileMock.mockRejectedValueOnce(new Error('Update failed'))
+
+    renderPage()
+
+    await selectOption(english.name, chinese.name)
+
+    expect(await screen.findByText('Update failed')).toBeInTheDocument()
+  })
+
+  it('should show success toast when timezone updates', async () => {
+    const niueTimezone = getTimezoneOption('Pacific/Niue')
+    const midwayTimezone = getTimezoneOption('Pacific/Midway')
+    updateUserProfileMock.mockResolvedValueOnce({ result: 'success' })
+
+    renderPage()
+
+    await selectOption(niueTimezone.name, midwayTimezone.name)
+
+    expect(await screen.findByText('common.actionMsg.modifiedSuccessfully')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: midwayTimezone.name })).toBeInTheDocument()
+  })
+
+  it('should show error toast when timezone update fails', async () => {
+    const niueTimezone = getTimezoneOption('Pacific/Niue')
+    const midwayTimezone = getTimezoneOption('Pacific/Midway')
+    updateUserProfileMock.mockRejectedValueOnce(new Error('Timezone failed'))
+
+    renderPage()
+
+    await selectOption(niueTimezone.name, midwayTimezone.name)
+
+    expect(await screen.findByText('Timezone failed')).toBeInTheDocument()
+  })
+})
