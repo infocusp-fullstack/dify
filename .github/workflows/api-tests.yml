@@ -73,6 +73,9 @@ jobs:
           OPENDAL_FS_ROOT: /tmp/dify-storage
         run: |
           uv run --project api pytest \
+            --cov=api \
+            --cov-report=json \
+            --cov-report=term \
             -n auto \
             --timeout "${PYTEST_TIMEOUT:-180}" \
             api/tests/integration_tests/workflow \
@@ -80,29 +83,16 @@ jobs:
             api/tests/test_containers_integration_tests \
             api/tests/unit_tests
 
-      - name: Coverage Summary
-        run: |
-          set -x
-          # Extract coverage percentage and create a summary
-          TOTAL_COVERAGE=$(python -c 'import json; print(json.load(open("coverage.json"))["totals"]["percent_covered_display"])')
+      - name: Upload PR coverage artifact
+        if: github.event_name == 'pull_request' && matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-api-coverage
+          path: coverage.json
 
-          # Create a detailed coverage summary
-          echo "### Test Coverage Summary :test_tube:" >> $GITHUB_STEP_SUMMARY
-          echo "Total Coverage: ${TOTAL_COVERAGE}%" >> $GITHUB_STEP_SUMMARY
-          {
-            echo ""
-            echo "<details><summary>File-level coverage (click to expand)</summary>"
-            echo ""
-            echo '```'
-            uv run --project api coverage report -m
-            echo '```'
-            echo "</details>"
-          } >> $GITHUB_STEP_SUMMARY
-
-      - name: Upload coverage artifact (fake main only)
-        if: github.ref == 'refs/heads/test/fake_main' && matrix.python-version == '3.12'
+      - name: Upload main coverage artifact
+        if: github.ref == 'refs/heads/main' && matrix.python-version == '3.12'
         uses: actions/upload-artifact@v4
         with:
           name: main-api-coverage
           path: coverage.json
-          
