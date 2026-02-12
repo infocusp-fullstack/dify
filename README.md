@@ -42,6 +42,15 @@
         <img alt="LFX Contributors" src="https://insights.linuxfoundation.org/api/badge/contributors?project=langgenius-dify"></a>
     <a href="https://insights.linuxfoundation.org/project/langgenius-dify" target="_blank">
         <img alt="LFX Active Contributors" src="https://insights.linuxfoundation.org/api/badge/active-contributors?project=langgenius-dify"></a>
+    <a href="#">
+        <img alt="api.controllers coverage"
+             src="https://img.shields.io/endpoint?url=https://infocusp-fullstack.github.io/dify/controllers-main.json"></a>
+    <a href="#">
+        <img alt="api.services Coverage"
+             src="https://img.shields.io/endpoint?url=https://infocusp-fullstack.github.io/dify/services-main.json"></a>
+    <a href="#">
+        <img alt="api.core Coverage"
+             src="https://img.shields.io/endpoint?url=https://infocusp-fullstack.github.io/dify/core-main.json"></a>
 </p>
 
 <p align="center">

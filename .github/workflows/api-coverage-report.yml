@@ -1,0 +1,47 @@
+name: API Coverage Report
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download PR coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-api-coverage
+          path: .
+
+      - name: Rename PR coverage
+        run: mv coverage.json pr_coverage.json
+
+      - name: Download main coverage
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: main-ci.yml
+          branch: main
+          name: main-api-coverage
+          path: .
+
+      - name: Rename main coverage
+        run: mv coverage.json main_coverage.json
+
+      - name: Compare coverage
+        run: |
+          python .github/scripts/compare_api_coverage.py \
+            pr_coverage.json \
+            main_coverage.json \
+            > coverage_comment.md
+
+      - name: Comment on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: coverage_comment.md

@@ -56,6 +56,15 @@ jobs:
     if: needs.check-changes.outputs.api-changed == 'true'
     uses: ./.github/workflows/api-tests.yml
 
+  api-coverage-report:
+    name: API Coverage Report
+    needs:
+    - check-changes
+    - api-tests
+    if: github.event_name == 'pull_request' &&
+      needs.check-changes.outputs.api-changed == 'true'
+    uses: ./.github/workflows/api-coverage-report.yml
+
   web-tests:
     name: Web Tests
     needs: check-changes
