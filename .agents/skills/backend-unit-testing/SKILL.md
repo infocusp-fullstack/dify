@@ -394,11 +394,11 @@ async def test_async_operation(self):
 
 For more testing patterns and examples, refer to:
 
-- [test_auth_wraps.py](file:///home/dev/Documents/repos/github.com/langgenius/dify/api/tests/unit_tests/controllers/inner_api/test_auth_wraps.py) - Decorator testing patterns
-- [test_encrypter.py](file:///home/dev/Documents/repos/github.com/langgenius/dify/api/tests/unit_tests/core/helper/test_encrypter.py) - Security testing patterns
-- [test_mcp_client.py](file:///home/dev/Documents/repos/github.com/langgenius/dify/api/tests/unit_tests/core/mcp/test_mcp_client.py) - Client and context manager testing
-- [test_dify_config.py](file:///home/dev/Documents/repos/github.com/langgenius/dify/api/tests/unit_tests/configs/test_dify_config.py) - Configuration and parametrized testing
-- [conftest.py](file:///home/dev/Documents/repos/github.com/langgenius/dify/api/tests/unit_tests/conftest.py) - Shared fixtures and test configuration
+- [test_auth_wraps.py](./api/tests/unit_tests/controllers/inner_api/test_auth_wraps.py) - Decorator testing patterns
+- [test_encrypter.py](./api/tests/unit_tests/core/helper/test_encrypter.py) - Security testing patterns
+- [test_mcp_client.py](./api/tests/unit_tests/core/mcp/test_mcp_client.py) - Client and context manager testing
+- [test_dify_config.py](./api/tests/unit_tests/configs/test_dify_config.py) - Configuration and parametrized testing
+- [conftest.py](./api/tests/unit_tests/conftest.py) - Shared fixtures and test configuration
 
 ---
 
